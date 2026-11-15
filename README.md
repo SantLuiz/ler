@@ -9,7 +9,7 @@ LER is a local, keyboard-first EPUB reader built with TypeScript, SolidJS and Op
 
 **Status:** early development / pre-v0.1.0. The automated suite is green, but native terminal graphics still need validation in a real Windows Terminal session.
 
-[Português (Brasil)](README.pt-BR.md)
+[Português (Brasil)](docs/README.pt-BR.md)
 
 ## Why LER?
 
@@ -84,23 +84,25 @@ LER currently targets Windows because its installer and native terminal renderin
 cd /d D:\Library
 git clone https://github.com/SantLuiz/ler.git LER
 cd LER
-install.cmd
+scripts\install.cmd
 ```
 
 The installer installs dependencies and adds the repository's `bin` directory to the current user's PATH. It does not require administrator access. Reopen terminals that were already running before installation.
 
 PowerShell users can run the installer directly:
 
+Run the following commands from the cloned repository's root, which contains `package.json`:
+
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\install.ps1
 ```
 
 Useful installer switches:
 
 ```powershell
-.\install.ps1 -NoPath              # install dependencies without changing PATH
-.\install.ps1 -SkipDependencies   # only register the command
-.\install.ps1 -Uninstall          # remove LER from the user PATH
+.\scripts\install.ps1 -NoPath              # install dependencies without changing PATH
+.\scripts\install.ps1 -SkipDependencies   # only register the command
+.\scripts\install.ps1 -Uninstall          # remove LER from the user PATH
 ```
 
 `-Uninstall` removes only the PATH entry. It preserves the repository, books, progress and bookmarks.
@@ -190,7 +192,8 @@ LER/
 ├── bin/LER.cmd                   # PATH launcher
 ├── src/                          # application source
 ├── tests/                        # automated tests
-└── install.cmd / install.ps1     # Windows installation helpers
+├── scripts/                      # install.cmd, install.ps1 and runtime preload
+└── docs/                         # README.pt-BR.md
 ```
 
 All runtime directories are gitignored and created lazily. Back up `.ler/` if you want to preserve reading data. Identical EPUB bytes retain their identity when a file is renamed; reopening a moved file can reconnect its saved progress. The first opening of an old library migrates legacy `.leitor/` data into `.ler/` and preserves unknown files.
@@ -216,6 +219,8 @@ The CI workflow runs type checking and the full test suite on Windows for every 
 `package-lock.json` is also required: the Windows installer uses `npm ci` to bootstrap Bun when it is not installed. Keep both lockfiles. Use small, self-authored test fixtures and do not commit personal books, reading data or screenshots of copyrighted passages. For rendering changes, check scrolling, resizing, tab switching and exit cleanup in a real terminal; update English and Portuguese interface text together.
 
 ## Project structure
+
+The root contains the main README, license, package manifests, lockfiles and Bun/TypeScript configuration. Application code lives in `src/`, tests in `tests/`, Windows installers and runtime helpers in `scripts/`, the PATH launcher in `bin/`, and translated documentation in `docs/`. GitHub Actions configuration lives in `.github/workflows/`.
 
 ```text
 src/

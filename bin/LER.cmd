@@ -15,5 +15,5 @@ exit /b %errorlevel%
 "%LER_ROOT%\node_modules\bun\bin\bun.exe" --preload "%LER_ROOT%\scripts\preload.ts" "%LER_ROOT%\src\main.tsx" %*
 exit /b %errorlevel%
 :missing
-echo LER: execute install.cmd na pasta do repositorio para instalar as dependencias. 1>&2
+echo LER: execute scripts\install.cmd na pasta do repositorio para instalar as dependencias. 1>&2
 exit /b 1

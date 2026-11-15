@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param([switch]$NoPath, [switch]$SkipDependencies, [switch]$Uninstall)
 $ErrorActionPreference = 'Stop'
-$repo = $PSScriptRoot
+$repo = Split-Path -Parent $PSScriptRoot
 $bin = Join-Path $repo 'bin'
 function Get-PathParts([string]$value) { @($value -split ';' | Where-Object { $_ -and $_.TrimEnd('\') -ine $bin.TrimEnd('\') }) }
 if ($Uninstall) {

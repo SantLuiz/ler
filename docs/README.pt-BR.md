@@ -2,17 +2,19 @@
 
 Leitor EPUB local para terminal, feito com TypeScript, Solid e OpenTUI. Tela inicial com busca e comandos, abas compactas de livros, marcadores e retomada de leitura. **Versão inicial em desenvolvimento; o MVP ainda precisa de validação visual.**
 
+[English](../README.md)
+
 ## Executar
 
 No Windows, crie uma pasta com seus livros e clone o repositório numa subpasta dela. Instale **Bun 1.4.4+ ou Node.js com npm** antes de executar o instalador. Ele prepara as dependências e adiciona o comando ao PATH do usuário, sem exigir administrador. Windows Terminal 1.22+ permite imagens SIXEL.
 
-Exemplo no CMD, substituindo `URL_DO_REPOSITORIO` pelo endereço do projeto:
+Exemplo no CMD:
 
 ```bat
 cd /d D:\Biblioteca
-git clone URL_DO_REPOSITORIO LER
+git clone https://github.com/SantLuiz/ler.git LER
 cd LER
-install.cmd
+scripts\install.cmd
 cd ..
 LER
 ```
@@ -28,9 +30,9 @@ LER --help
 
 `--choose` pergunta qual pasta usar. Quando iniciado dentro do próprio repositório, o LER usa a pasta pai, onde estão os livros. Uma escolha antiga não substitui a pasta atual. Os livros continuam onde estão; os dados do aplicativo ficam exclusivamente dentro da pasta clonada do LER.
 
-No PowerShell, o instalador também pode ser executado com `powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1`. Para remover apenas o comando do PATH, execute o mesmo script com `-Uninstall`; livros e progresso são preservados. Se mover o repositório, reinstale o comando a partir da nova localização.
+Execute os comandos de instalação a partir da raiz do clone, onde fica `package.json`. No PowerShell, o instalador também pode ser executado com `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\install.ps1`. Para remover apenas o comando do PATH, execute o mesmo script com `-Uninstall`; livros e progresso são preservados. Se mover o repositório, reinstale o comando a partir da nova localização.
 
-Para executar sem registrar no PATH: `powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -NoPath`, depois `bin\LER.cmd`. Desenvolvedores com Bun podem continuar usando `bun install --frozen-lockfile` e `bun run start`.
+Para executar sem registrar no PATH: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\install.ps1 -NoPath`, depois `bin\LER.cmd`. Desenvolvedores com Bun podem continuar usando `bun install --frozen-lockfile` e `bun run start`.
 
 O LER inicia na home e restaura seus livros nas abas. A busca central aceita nomes de livros/autores ou comandos: `/biblioteca`, `/config`, `/continuar`, `/ajuda`, `/atualizar` e `/sair`. Os equivalentes em inglês também funcionam. Uma busca vazia não lista livros. Use Tab para acessar Biblioteca, Aparência e Ajuda; Continuar aparece quando existe uma leitura salva e reabre o livro na posição guardada, mesmo se a aba foi fechada ou o programa reiniciado. As legendas destacam a tecla e mostram apenas as ações relevantes para a tela atual.
 
@@ -47,6 +49,10 @@ Biblioteca/
 ├── livros e pastas…
 └── LER/
     ├── src/
+    ├── tests/                testes automatizados
+    ├── scripts/              install.cmd, install.ps1 e preload do runtime
+    ├── bin/                  comando LER.cmd registrado no PATH
+    ├── docs/                 README em português
     ├── node_modules/          criado na instalação
     └── .ler/                 criado durante instalação/uso
         ├── libraries/<id>/   estado separado por biblioteca
@@ -56,6 +62,8 @@ Biblioteca/
 ```
 
 Essas pastas geradas são ignoradas pelo Git: não vêm preenchidas no clone nem devem ser publicadas. Elas são criadas conforme necessárias. Para fazer backup dos dados de leitura, copie `.ler/` de dentro do LER. Bibliotecas diferentes têm registros separados; mover o LER junto das bibliotecas preserva suas referências relativas.
+
+O README principal, a licença, os manifestos e lockfiles de dependências e as configurações de Bun e TypeScript permanecem na raiz. A integração contínua fica em `.github/workflows/`.
 
 Na primeira abertura de uma biblioteca usada pela versão antiga, o LER migra o progresso de `.leitor/` para o novo local. A pasta antiga é removida depois da cópia, se contiver apenas arquivos do aplicativo. Arquivos desconhecidos são preservados. Feche a versão antiga antes de migrar. A configuração antiga em `%APPDATA%/leitor/config.json`, quando existente, também é arquivada dentro do clone.
 
@@ -81,4 +89,4 @@ Na busca central da **home** (F5 ou aba LER), digite parte do nome do arquivo, t
 
 Ao digitar a primeira busca, o catálogo é construído em segundo plano lendo apenas os metadados dos EPUBs. Os resultados aparecem conforme os arquivos são encontrados. O índice é salvo junto do progresso; arquivos inalterados não precisam ter os metadados lidos novamente. Use **Ctrl+R** na home ou `/atualizar` após adicionar, mover ou remover livros. Se o EPUB não tiver autor ou estiver inválido, ainda será encontrado pelo nome do arquivo. A busca dentro do livro continua em `/` durante a leitura.
 
-Limitações atuais: sem DRM, layout fixo ou SVG geral; CSS e ênfase simplificados; busca dentro do livro limitada a mil resultados. Alguns erros ainda são bilíngues. A compatibilidade gráfica no Windows Terminal precisa de conferência manual. Consulte o [README em inglês](README.md) para detalhes.
+Limitações atuais: sem DRM, layout fixo ou SVG geral; CSS e ênfase simplificados; busca dentro do livro limitada a mil resultados. Alguns erros ainda são bilíngues. A compatibilidade gráfica no Windows Terminal precisa de conferência manual. Consulte o [README em inglês](../README.md) para detalhes.

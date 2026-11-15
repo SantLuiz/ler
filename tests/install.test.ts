@@ -11,6 +11,6 @@ test.skipIf(process.platform!=='win32')('CMD launcher works through PATH in fold
  }finally{await fs.rm(root,{recursive:true,force:true});}
 });
 test.skipIf(process.platform!=='win32')('installer validation is repeatable without changing the user PATH',()=>{
- const script=path.resolve(import.meta.dir,'../install.ps1').replaceAll("'","''");const command=`$before = [Environment]::GetEnvironmentVariable('Path','User'); & '${script}' -NoPath -SkipDependencies; & '${script}' -NoPath -SkipDependencies; if ($before -cne [Environment]::GetEnvironmentVariable('Path','User')) { throw 'PATH changed' }`;
+ const script=path.resolve(import.meta.dir,'../scripts/install.ps1').replaceAll("'","''");const command=`$before = [Environment]::GetEnvironmentVariable('Path','User'); & '${script}' -NoPath -SkipDependencies; & '${script}' -NoPath -SkipDependencies; if ($before -cne [Environment]::GetEnvironmentVariable('Path','User')) { throw 'PATH changed' }`;
  const result=spawnSync('powershell.exe',['-NoProfile','-ExecutionPolicy','Bypass','-Command',command],{encoding:'utf8',timeout:15000});expect(result.status).toBe(0);
 });
