@@ -2,6 +2,7 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import * as yauzl from 'yauzl';
 import { parseDocument } from 'htmlparser2';
+import {bookFormat, bookTitle} from './formats';
 export type CatalogEntry = { file: string; title: string; authors: string[]; size: number; modified: number; error?: boolean };
 export type Catalog = Record<string, CatalogEntry>;
 const nodes = (n:any, tag:string):any[] => [...(n.name?.split(':').pop()===tag?[n]:[]),...(n.children??[]).flatMap((child:any)=>nodes(child,tag))];
@@ -19,7 +20,7 @@ export async function epubMetadata(filename:string) {
 }
 export async function indexLibrary(root:string, ignored:string, cached:Catalog, onEntry:(entry:CatalogEntry)=>void, onError:()=>void=()=>{}) {
  async function visit(dir:string){let entries;try{entries=await fs.readdir(dir,{withFileTypes:true});}catch{onError();return;}
-  for(const entry of entries){if(['.git','.leitor','.ler','node_modules','.cache'].includes(entry.name))continue;const full=path.join(dir,entry.name);if(full===ignored)continue;if(entry.isDirectory())await visit(full);else if(entry.isFile()&&/\.epub$/i.test(entry.name)){try{const stat=await fs.stat(full);const file=path.relative(root,full);let result=cached[file];if(!result||result.size!==stat.size||result.modified!==stat.mtimeMs){let meta={title:path.basename(file,'.epub'),authors:[] as string[]};let error=false;try{const parsed=await epubMetadata(full);meta={...parsed,title:parsed.title||meta.title};}catch{error=true;}result={file,...meta,size:stat.size,modified:stat.mtimeMs,error};}onEntry(result);}catch{onError();}}}
+  for(const entry of entries){if(['.git','.leitor','.ler','node_modules','.cache'].includes(entry.name))continue;const full=path.join(dir,entry.name);if(full===ignored)continue;if(entry.isDirectory())await visit(full);else if(entry.isFile()&&bookFormat(entry.name)){try{const stat=await fs.stat(full);const file=path.relative(root,full);let result=cached[file];if(!result||result.size!==stat.size||result.modified!==stat.mtimeMs){let meta={title:bookTitle(file),authors:[] as string[]};let error=false;try{const parsed=bookFormat(full)==='epub'?await epubMetadata(full):meta;meta={...parsed,title:parsed.title||meta.title};}catch{error=true;}result={file,...meta,size:stat.size,modified:stat.mtimeMs,error};}onEntry(result);}catch{onError();}}}
  }await visit(root);
 }
 const normalize=(s:string)=>s.normalize('NFD').replace(/\p{M}/gu,'').toLocaleLowerCase();

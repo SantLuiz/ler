@@ -1,8 +1,8 @@
 # LER — Leitor Extremamente Reduzido
 
-> A focused EPUB reader for the terminal.
+> A focused EPUB, TXT and PDF reader for the terminal.
 
-LER is a local, keyboard-first EPUB reader built with TypeScript, SolidJS and OpenTUI. It keeps the reading experience intentionally small: open a library, find a book, read with predictable pagination, and resume exactly where you stopped.
+LER is a local, keyboard-first EPUB, TXT and PDF reader built with TypeScript, SolidJS and OpenTUI. It keeps the reading experience intentionally small: open a library, find a book, read with predictable pagination, and resume exactly where you stopped.
 
 [![CI](https://github.com/SantLuiz/ler/actions/workflows/ci.yml/badge.svg)](https://github.com/SantLuiz/ler/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -25,7 +25,7 @@ Most EPUB readers are designed around a browser window. LER is for people who wa
 
 | Area | What LER provides |
 | --- | --- |
-| Library | Recursive EPUB discovery, metadata indexing and folder navigation |
+| Library | Recursive EPUB/TXT/PDF discovery, EPUB metadata indexing and folder navigation |
 | Reading | Screen paging, chapter navigation, contents, images and simplified HTML text |
 | Search | Accent-insensitive library search and cancellable in-book search with up to 1,000 matches |
 | Continuity | Saved position, bookmarks, open tabs and last-session resume |
@@ -134,6 +134,8 @@ The home screen footer shows the full absolute library path, wrapping it across 
 
 ## First reading session
 
+EPUB search includes titles and authors from metadata. TXT and PDF are indexed by filename. Use `Ctrl+R` after adding files to an existing library.
+
 1. Start LER from your books folder.
 2. Press `F5` or choose the LER tab to focus the home search.
 3. Type part of a filename, title or author. Search is case- and accent-insensitive; every typed word must match.
@@ -166,6 +168,25 @@ The first non-empty library query builds a metadata catalog in a worker. It read
 | `Ctrl+C` | Save and quit |
 
 Mouse input can select books and tabs and scroll reading content. Menus also support arrow keys and `Enter`.
+
+## TXT and PDF
+
+TXT supports UTF-8, UTF-16 with a byte-order mark, and Windows-1252 fallback. Line breaks are preserved. Reading, text search, bookmarks, tabs and saved position work as with EPUB; empty or binary files are rejected. The TXT size limit is 64 MiB.
+
+PDF pages are rendered locally as images in a background worker using [PDFium](https://github.com/hyzyla/pdfium). Text, scanned pages, tables and illustrations retain their page layout. No external PDF application or OCR is required. Rendering is on demand, with at most two rendered pages cached per open document.
+
+| PDF key | Action |
+| --- | --- |
+| `Page Up` / `Page Down`, `Space` | Previous / next page (`Space` advances) |
+| Arrow keys / `j` / `k` | Change pages at 100%; pan while zoomed |
+| `+` / `-` (or `=` / `i` to enlarge) | Zoom from 100% to 400% |
+| `0` | Fit the whole page |
+| `Home` / `End` | First / last page |
+| `s` | List pages |
+| `b` / `Shift+B` | Bookmark page / list bookmarks |
+| `Esc` | Save and close the tab, or dismiss an open panel |
+
+The mouse wheel changes pages at 100% and pans vertically while zoomed. PDF text search and selection are unavailable in image mode. PDFs requiring a password are reported as unsupported; the file limit is 256 MiB and 20,000 pages. Image quality depends on the terminal's graphics support; the blocks fallback is less detailed than SIXEL/Kitty.
 
 ## Commands and settings
 
@@ -238,6 +259,10 @@ src/
 ├── pagination.ts         # Visual pagination and chapter boundaries
 ├── preferences.ts        # Default and validated appearance settings
 ├── search.worker.ts      # Background in-book search
+├── formats.ts            # Supported extensions and filename titles
+├── text.ts               # TXT decoding and reading
+├── pdf.ts                # PDF worker lifecycle and page resources
+├── pdf.worker.ts         # PDF page rendering and bounded image cache
 ├── storage.ts            # State, backups, migration and library isolation
 └── components/           # Small reusable UI components
 ```
@@ -247,7 +272,7 @@ src/
 - EPUB 2/3 reflowable text and raster images are supported; DRM and fixed-layout books are not.
 - General SVG rendering and full publisher CSS fidelity are not supported.
 - Complex typography and inline emphasis are intentionally simplified.
-- In-book search returns at most 1,000 matches.
+- EPUB/TXT in-book search returns at most 1,000 matches; PDF image mode has no text search.
 - SIXEL graphics and image interaction still require validation in a real compatible terminal.
 - Some error messages remain bilingual while localization is being completed.
 

@@ -1,6 +1,6 @@
 # LER — Leitor Extremamente Reduzido
 
-Leitor EPUB local para terminal, feito com TypeScript, Solid e OpenTUI. Tela inicial com busca e comandos, abas compactas de livros, marcadores e retomada de leitura. **Versão inicial em desenvolvimento; o MVP ainda precisa de validação visual.**
+Leitor EPUB, TXT e PDF local para terminal, feito com TypeScript, Solid e OpenTUI. Tela inicial com busca e comandos, abas compactas de livros, marcadores e retomada de leitura. **Versão inicial em desenvolvimento; o MVP ainda precisa de validação visual.**
 
 [English](../README.md)
 
@@ -43,6 +43,28 @@ Use as setas ou j/k durante a leitura para rolar uma linha; Page Up/Down, ←/�
 O botão **Biblioteca** abaixo da busca abre um popup com a estrutura de pastas e filtro por nome. Use ↑↓ e Enter para abrir pastas e livros; Backspace com filtro vazio volta à pasta anterior.
 
 Se o console de diagnóstico aparecer, pressione **Esc** para fechá-lo sem sair do LER. **F12** abre ou fecha o console; enquanto ele estiver aberto, as teclas não alteram a leitura nem a busca. **Ctrl+C** continua salvando e encerrando o aplicativo.
+
+## TXT e PDF
+
+Arquivos TXT e PDF aparecem na biblioteca e na busca pelo nome do arquivo; a busca por título e autor nos metadados continua disponível para EPUB. Use Ctrl+R na home para atualizar o catálogo após adicionar arquivos.
+
+TXT aceita UTF-8, UTF-16 com BOM e Windows-1252 como alternativa. Preserva quebras de linha e oferece os mesmos controles de leitura, busca textual, abas, marcadores e progresso do EPUB. Arquivos vazios ou binários são recusados; o limite é 64 MiB.
+
+PDF é exibido como imagens das páginas, preservando texto, digitalizações, tabelas e ilustrações. A renderização usa [PDFium](https://github.com/hyzyla/pdfium), localmente e em segundo plano, sem aplicativo externo ou OCR. As páginas são renderizadas conforme a navegação, mantendo no máximo duas imagens em cache por documento aberto.
+
+| Tecla no PDF | Ação |
+| --- | --- |
+| `Page Up` / `Page Down` | Página anterior / próxima |
+| `Espaço` | Próxima página |
+| Setas ou `j` / `k` | Trocar páginas em 100%; deslocar a área visível com zoom |
+| `+` / `-` (`=` ou `i` também ampliam) | Ajustar zoom entre 100% e 400% |
+| `0` | Mostrar a página inteira |
+| `Home` / `End` | Primeira / última página |
+| `s` | Listar páginas |
+| `b` / `Shift+B` | Marcar página / listar marcadores |
+| `Esc` | Salvar e fechar a aba, ou fechar um painel aberto |
+
+A roda do mouse troca páginas em 100% e desloca verticalmente a área ampliada. PDF nesse modo não tem busca nem seleção de texto. PDFs que exigem senha não são abertos; o limite é 256 MiB e 20 mil páginas. A qualidade depende do suporte gráfico do terminal: SIXEL/Kitty oferecem mais detalhes que o modo de blocos.
 
 ## Onde ficam os dados
 

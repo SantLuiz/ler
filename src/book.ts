@@ -1,13 +1,16 @@
 import * as yauzl from 'yauzl';
 import { parseDocument } from 'htmlparser2';
 import { createHash } from 'node:crypto';
-import { createReadStream } from 'node:fs';
+import { createReadStream, promises as fs } from 'node:fs';
 import path from 'node:path';
+import {bookFormat, type BookFormat} from './formats';
+import {openText} from './text';
+import {openPdf} from './pdf';
 
 export type Block = { text: string; image?: string; heading?: boolean };
 export type Chapter = { href: string; title: string; blocks: Block[]; targets?: Record<string, number> };
 export type Anchor = { chapter: number; block: number; offset: number };
-export type Book = { id: string; title: string; chapters: Chapter[]; toc: { label: string; href: string }[]; resource: (href: string) => Promise<Uint8Array>; close: () => void };
+export type Book = { id: string; title: string; format?: BookFormat; chapters: Chapter[]; toc: { label: string; href: string }[]; resource: (href: string) => Promise<Uint8Array>; close: () => void };
 const children = (n: any): any[] => n.children ?? [];
 const text = (n: any): string => n.type === 'text' ? n.data : children(n).map(text).join('');
 function all(n: any, tag: string): any[] { return [...(n.name?.split(':').pop() === tag ? [n] : []), ...children(n).flatMap(c => all(c, tag))]; }
@@ -35,7 +38,16 @@ export function blocksFromHtml(html: string, href: string, targets: Record<strin
   walk(all(root, 'body')[0] ?? root); flush(); return blocks;
 }
 export async function openBook(filename: string): Promise<Book> {
+  const format = bookFormat(filename);
+  if (!format) throw new Error('Formato não suportado / Unsupported format: EPUB, TXT, PDF');
+  if(format!=='epub') {
+    const limit=(format==='pdf'?256:64)*1024*1024;
+    if((await fs.stat(filename)).size>limit)throw new Error(`${format.toUpperCase()} excede / exceeds ${limit/1024/1024} MiB`);
+  }
   const hash = createHash('sha256'); for await (const chunk of createReadStream(filename)) hash.update(chunk);
+  const id = hash.digest('hex');
+  if (format === 'txt') return openText(filename, id);
+  if (format === 'pdf') return openPdf(filename, id);
   const zip = await new Promise<yauzl.ZipFile>((resolve, reject) => yauzl.open(filename, { lazyEntries: true, autoClose: false }, (e, z) => e ? reject(e) : resolve(z!)));
   try {
     const entries = new Map<string, yauzl.Entry>();
@@ -79,7 +91,7 @@ export async function openBook(filename: string): Promise<Book> {
     const nav = [...manifest.values()].find(n => n.properties?.split(' ').includes('nav'));
     if (nav) { const href = resolveHref(opf, nav.href); const doc = await xml(href); const section = all(doc, 'nav').find(n => n.attribs?.['epub:type']?.includes('toc')) ?? all(doc, 'nav')[0]; for (const a of all(section ?? doc, 'a')) { try { toc.push({ label: text(a).trim(), href: resolveLink(href, a.attribs.href) }); } catch {} } }
     else { const ncx = [...manifest.values()].find(n => n['media-type'] === 'application/x-dtbncx+xml'); if (ncx) { const href = resolveHref(opf, ncx.href); for (const point of all(await xml(href), 'navPoint')) { const src = all(point, 'content')[0]?.attribs.src; if (src) toc.push({ label: text(all(point, 'navLabel')[0] ?? point).trim(), href: resolveLink(href, src) }); } } }
-    return { id: hash.digest('hex'), title: text(all(pkg, 'title')[0] ?? {}).trim() || path.basename(filename, '.epub'), chapters, toc, resource, close: () => zip.close() };
+    return { id, format:'epub', title: text(all(pkg, 'title')[0] ?? {}).trim() || path.basename(filename, '.epub'), chapters, toc, resource, close: () => zip.close() };
   } catch (e) { zip.close(); throw e; }
 }
 export function resolveLink(base: string, href: string) {
