@@ -25,14 +25,19 @@ test('pixel logo animates only its colors, pauses cleanly and resizes without cl
  clock.advance(2000);expect(clock.pendingTimerCount).toBe(0);
 });
 
-test('only the tiny stars between letters twinkle; letters and baseline keep their colors',()=>{
+test('many square pixels twinkle independently while letters stay still and the LED strip travels right',()=>{
  for(const size of ['large','medium'] as const){
   const pixels=logoPixels(size).flat();const stars=pixels.filter(pixel=>pixel.kind==='spark');
-  expect(stars).toHaveLength(4);expect(stars.every(pixel=>pixel.glyph==='· ')).toBe(true);
+  expect(stars.length).toBeGreaterThanOrEqual(28);expect(stars.every(pixel=>pixel.glyph==='▪ ')).toBe(true);
   const phases=Array.from({length:72},(_,phase)=>phase);
   expect(phases.every(phase=>pixels.filter(p=>p.kind==='letter').every(p=>pixelColor(p,phase)===logoColors.text))).toBe(true);
-  expect(phases.every(phase=>pixels.filter(p=>p.kind==='baseline').every(p=>pixelColor(p,phase)===logoColors.baseline))).toBe(true);
-  expect(pixelColor(stars[0],4)).toBe(logoColors.accent.toLowerCase());expect(pixelColor(stars[0],20,'#202020')).toBe('#202020');
+  const leds=pixels.filter(p=>p.kind==='baseline'&&p.glyph.trim());
+  expect(pixelColor(leds[0],0)).toBe(logoColors.accent.toLowerCase());expect(pixelColor(leds[1],0)).toBe(logoColors.baseline.toLowerCase());
+  expect(pixelColor(leds[1],1)).toBe(logoColors.accent.toLowerCase());expect(pixelColor(leds.at(-1)!,leds.length-1)).toBe(logoColors.accent.toLowerCase());
+  expect(pixelColor(leds[0],leds[0].period)).toBe(logoColors.accent.toLowerCase());
+  expect(leds.every(p=>pixelColor(p,undefined)===logoColors.baseline)).toBe(true);
+  expect(pixelColor(stars[0],(55-stars[0].offset!)%48)).toBe(logoColors.accent.toLowerCase());expect(pixelColor(stars[0],undefined,'#202020')).toBe('#202020');
+  expect(phases.some(phase=>stars.filter(p=>pixelColor(p,phase)!=='#101114').length>=8)).toBe(true);
  }
 });
 
