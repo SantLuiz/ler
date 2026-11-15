@@ -5,6 +5,7 @@ import {ManualClock} from '@opentui/core/testing';
 import {HomeLogo} from '../src/components/HomeLogo';
 import {App} from '../src/app';
 import {preferences} from '../src/preferences';
+import {logoPixels,pixelColor,logoColors} from '../src/logo';
 import type {State} from '../src/storage';
 import {promises as fs} from 'node:fs';
 import path from 'node:path';
@@ -15,13 +16,24 @@ test('pixel logo animates only its colors, pauses cleanly and resizes without cl
  const setup=await testRender(()=><HomeLogo size={size()} animate={animate()}/>,{width:80,height:15,clock});
  try {
   await setup.renderOnce();const text=setup.captureCharFrame();const initial=JSON.stringify(setup.captureSpans());
-  clock.advance(1800);await setup.renderOnce();expect(setup.captureCharFrame()).toBe(text);expect(JSON.stringify(setup.captureSpans())).not.toBe(initial);
+  clock.advance(700);await setup.renderOnce();expect(setup.captureCharFrame()).toBe(text);expect(JSON.stringify(setup.captureSpans())).not.toBe(initial);
   setAnimate(false);await setup.renderOnce();const paused=JSON.stringify(setup.captureSpans());clock.advance(1800);await setup.renderOnce();expect(JSON.stringify(setup.captureSpans())).toBe(paused);
-  setAnimate(true);clock.advance(1800);await setup.renderOnce();expect(JSON.stringify(setup.captureSpans())).not.toBe(paused);
+  setAnimate(true);clock.advance(350);await setup.renderOnce();expect(JSON.stringify(setup.captureSpans())).not.toBe(paused);
   setSize('small');await setup.renderOnce();expect(setup.captureCharFrame()).toContain('L E R');
   const compact=JSON.stringify(setup.captureSpans());clock.advance(1800);await setup.renderOnce();expect(JSON.stringify(setup.captureSpans())).toBe(compact);
  } finally {await setup.dispose();}
  clock.advance(2000);expect(clock.pendingTimerCount).toBe(0);
+});
+
+test('only the tiny stars between letters twinkle; letters and baseline keep their colors',()=>{
+ for(const size of ['large','medium'] as const){
+  const pixels=logoPixels(size).flat();const stars=pixels.filter(pixel=>pixel.kind==='spark');
+  expect(stars).toHaveLength(4);expect(stars.every(pixel=>pixel.glyph==='· ')).toBe(true);
+  const phases=Array.from({length:72},(_,phase)=>phase);
+  expect(phases.every(phase=>pixels.filter(p=>p.kind==='letter').every(p=>pixelColor(p,phase)===logoColors.text))).toBe(true);
+  expect(phases.every(phase=>pixels.filter(p=>p.kind==='baseline').every(p=>pixelColor(p,phase)===logoColors.baseline))).toBe(true);
+  expect(pixelColor(stars[0],4)).toBe(logoColors.accent.toLowerCase());expect(pixelColor(stars[0],20,'#202020')).toBe('#202020');
+ }
 });
 
 test('logo animation preference defaults on and can be disabled through Appearance',async()=>{

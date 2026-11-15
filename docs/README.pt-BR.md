@@ -103,7 +103,7 @@ Use `i` sobre uma imagem para ampliá-la. Busca textual roda em worker canceláv
 
 ## Aparência e sumário
 
-A home usa uma logo de blocos pixelados, com letras claras e detalhes em azul suave. Uma onda discreta percorre a base, com pausas entre os ciclos. A animação pausa durante a busca e quando um painel está aberto; terminais menores usam uma versão compacta estática. Para desativar o efeito, abra **Configurações** (F3) e desligue **Animação da logo**. A escolha fica salva por biblioteca.
+A home usa uma logo de blocos pixelados, com letras claras e pequenas estrelas em azul suave cintilando entre as letras. As letras e a linha pontilhada permanecem estáticas. A animação pausa durante a busca e quando um painel está aberto; terminais menores usam uma versão compacta estática. Para desativar o efeito, abra **Configurações** (F3) e desligue **Animação da logo**. A escolha fica salva por biblioteca.
 
 A aba **Configurações** (F3, opção na home ou `/config`) permite alterar fundo e texto usando cores `#RRGGBB`, largura da coluna, espaçamento, altura das imagens, idioma e protocolo gráfico. Use ↑↓ para selecionar, ←→ para ajustar números e Enter para editar cores. As preferências são aplicadas imediatamente e salvas em `.ler/libraries/<id>/state.json`, dentro do LER.
 

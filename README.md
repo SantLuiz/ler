@@ -205,7 +205,7 @@ On the home screen, type `/` to use commands:
 
 Open **Settings** with `F3`, the home option or `/settings`. Changes apply immediately and persist with the selected library. The terminal controls font size; in Windows Terminal, use `Ctrl` + `+` / `-` or `Ctrl` + mouse wheel.
 
-The home logo uses terminal pixel blocks with light lettering and soft-blue accents. A gentle wave runs along its base, with pauses between sweeps. The animation stops during search and while a panel is open, and uses a compact static mark in smaller terminals. Turn **Logo animation** off in Settings for a static logo; the choice is saved per library.
+The home logo uses terminal pixel blocks with light lettering and tiny soft-blue stars twinkling between the letters. The letters and dotted baseline remain still. The animation stops during search and while a panel is open, and uses a compact static mark in smaller terminals. Turn **Logo animation** off in Settings for a static logo; the choice is saved per library.
 
 ## Data, backups and privacy
 

@@ -164,7 +164,7 @@ export function App(props: { root: string; appDirectory?: string; state: State; 
     const actionLabel=(action:HomeAction)=>({folders:label('Biblioteca','Folders'),continue:label('Continuar','Resume'),settings:label('Aparência','Appearance'),help:label('Ajuda','Help'),refresh:label('Atualizar','Refresh'),quit:label('Sair','Quit')})[action];
     return <box width={homeWidth()} flexDirection="column" gap={1}>
       <box alignItems="center" flexDirection="column" marginBottom={1}>
-        <HomeLogo size={libraryQuery().trim()?'small':dimensions().height>=38&&dimensions().width>=76?'large':dimensions().height>=28&&dimensions().width>=68?'medium':'small'} animate={!panel()&&!libraryQuery().trim()&&prefs().logoAnimation!==false}/>
+        <HomeLogo size={libraryQuery().trim()?'small':dimensions().height>=38&&dimensions().width>=76?'large':dimensions().height>=28&&dimensions().width>=72?'medium':'small'} animate={!panel()&&!libraryQuery().trim()&&prefs().logoAnimation!==false} background={prefs().background}/>
         <text fg="#777777">Leitor Extremamente Reduzido</text>
       </box>
       <box backgroundColor="#202020" border={['left']} borderColor="#73a5df" paddingLeft={2} paddingRight={2} paddingTop={1} paddingBottom={1} flexDirection="column">
