@@ -35,7 +35,7 @@ Most EPUB readers are designed around a browser window. LER is for people who wa
 
 ## How it fits together
 
-\`\`\`mermaid
+```mermaid
 flowchart LR
     A[Library folder] --> B[CLI entrypoint]
     B --> C[OpenTUI + Solid UI]
@@ -49,14 +49,14 @@ flowchart LR
     G --> J
     H --> J
     I --> J
-    J --> K[LER/.ler/libraries/<id>]
-\`\`\`
+    J --> K["LER/.ler/libraries/<id>"]
+```
 
-The application is deliberately split into small modules: EPUB parsing and normalization live in \`src/book.ts\`, catalog indexing in \`src/catalog.ts\`, pagination in \`src/pagination.ts\`, persistence in \`src/storage.ts\`, and the terminal UI in \`src/app.tsx\`.
+The application is deliberately split into small modules: EPUB parsing and normalization live in `src/book.ts`, catalog indexing in `src/catalog.ts`, pagination in `src/pagination.ts`, persistence in `src/storage.ts`, and the terminal UI in `src/app.tsx`.
 
 ### Session lifecycle
 
-\`\`\`mermaid
+```mermaid
 sequenceDiagram
     participant U as Reader
     participant C as CLI
@@ -74,49 +74,49 @@ sequenceDiagram
     H->>S: Save tab and reading position
     U->>C: Quit
     C->>S: Flush state and close resources
-\`\`\`
+```
 
 ## Installation on Windows
 
 LER currently targets Windows because its installer and native terminal rendering are Windows-first. Install **Bun 1.4.4+** or **Node.js with npm**, then clone the repository:
 
-\`\`\`bat
+```bat
 cd /d D:\Library
 git clone https://github.com/SantLuiz/ler.git LER
 cd LER
 install.cmd
-\`\`\`
+```
 
-The installer installs dependencies and adds the repository's \`bin\` directory to the current user's PATH. It does not require administrator access. Reopen terminals that were already running before installation.
+The installer installs dependencies and adds the repository's `bin` directory to the current user's PATH. It does not require administrator access. Reopen terminals that were already running before installation.
 
 PowerShell users can run the installer directly:
 
-\`\`\`powershell
+```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
-\`\`\`
+```
 
 Useful installer switches:
 
-\`\`\`powershell
+```powershell
 .\install.ps1 -NoPath              # install dependencies without changing PATH
 .\install.ps1 -SkipDependencies   # only register the command
 .\install.ps1 -Uninstall          # remove LER from the user PATH
-\`\`\`
+```
 
-\`-Uninstall\` removes only the PATH entry. It preserves the repository, books, progress and bookmarks.
+`-Uninstall` removes only the PATH entry. It preserves the repository, books, progress and bookmarks.
 
 ## Running LER
 
-Run \`LER\` from the folder that contains your books:
+Run `LER` from the folder that contains your books:
 
-\`\`\`bat
+```bat
 cd /d D:\Books
 LER
-\`\`\`
+```
 
 You can also select a different library explicitly:
 
-\`\`\`bat
+```bat
 LER "D:\Other Books"
 LER --choose
 LER --library "D:\Other Books"
@@ -124,63 +124,63 @@ LER --lang en
 LER --check
 LER --help
 LER --version
-\`\`\`
+```
 
 When the command is launched from inside the cloned repository, LER uses the repository's parent folder as the default library. An explicit path always wins; a remembered library location never silently overrides the current working directory.
 
 ## First reading session
 
 1. Start LER from your books folder.
-2. Press \`F5\` or choose the LER tab to focus the home search.
+2. Press `F5` or choose the LER tab to focus the home search.
 3. Type part of a filename, title or author. Search is case- and accent-insensitive; every typed word must match.
-4. Use \`↑\` / \`↓\` or \`j\` / \`k\`, then press \`Enter\` to open a book.
-5. Press \`Esc\` or \`Ctrl+C\` to save and quit. The next session can resume the saved position.
+4. Use `↑` / `↓` or `j` / `k`, then press `Enter` to open a book.
+5. Press `Esc` or `Ctrl+C` to save and quit. The next session can resume the saved position.
 
-The first non-empty library query builds a metadata catalog in a worker. It reads package metadata rather than every chapter, progressively shows results, and reuses the catalog for unchanged files. Press \`Ctrl+R\` on the home screen after changing files on disk.
+The first non-empty library query builds a metadata catalog in a worker. It reads package metadata rather than every chapter, progressively shows results, and reuses the catalog for unchanged files. Press `Ctrl+R` on the home screen after changing files on disk.
 
 ## Keyboard reference
 
 | Key | Action |
 | --- | --- |
-| \`Enter\` / \`Backspace\` | Open directory or book / go to the parent directory |
-| \`↑\` \`↓\` or \`j\` \`k\` | Move one line |
-| \`←\` \`→\`, \`Page Up\` / \`Page Down\`, \`Space\` | Move one screen |
-| \`Home\` / \`End\` | Chapter start / chapter end |
-| \`F6\` / \`Shift+F6\` | Cycle book tabs, home and settings |
-| \`F4\` | Close the active book tab |
-| \`F3\` | Open settings |
-| \`F5\` | Return to home/search |
-| \`/\` | Search inside a book; open slash commands on home |
-| \`n\` / \`Shift+N\` | Next / previous in-book search result |
-| \`s\` | Open table of contents |
-| \`b\` / \`Shift+B\` | Toggle bookmark / list bookmarks |
-| \`d\` in bookmarks | Delete the selected bookmark |
-| \`i\` on an image | Open an enlarged image view |
-| \`F2\` / \`Ctrl+P\` | Open the command palette |
-| \`Esc\` / \`Ctrl+C\` | Dismiss a panel / save and quit |
+| `Enter` / `Backspace` | Open directory or book / go to the parent directory |
+| `↑` `↓` or `j` `k` | Move one line |
+| `←` `→`, `Page Up` / `Page Down`, `Space` | Move one screen |
+| `Home` / `End` | Chapter start / chapter end |
+| `F6` / `Shift+F6` | Cycle book tabs, home and settings |
+| `F4` | Close the active book tab |
+| `F3` | Open settings |
+| `F5` | Return to home/search |
+| `/` | Search inside a book; open slash commands on home |
+| `n` / `Shift+N` | Next / previous in-book search result |
+| `s` | Open table of contents |
+| `b` / `Shift+B` | Toggle bookmark / list bookmarks |
+| `d` in bookmarks | Delete the selected bookmark |
+| `i` on an image | Open an enlarged image view |
+| `F2` / `Ctrl+P` | Open the command palette |
+| `Esc` / `Ctrl+C` | Dismiss a panel / save and quit |
 
-Mouse input can select books and tabs and scroll reading content. Menus also support arrow keys and \`Enter\`.
+Mouse input can select books and tabs and scroll reading content. Menus also support arrow keys and `Enter`.
 
 ## Commands and settings
 
-On the home screen, type \`/\` to use commands:
+On the home screen, type `/` to use commands:
 
 | Command | Result |
 | --- | --- |
-| \`/library\` | Open library/folder navigation |
-| \`/settings\` | Open appearance and language settings |
-| \`/continue\` | Reopen the last saved reading position |
-| \`/help\` | Show contextual help |
-| \`/refresh\` | Refresh the library catalog |
-| \`/quit\` | Save and exit |
+| `/library` | Open library/folder navigation |
+| `/settings` | Open appearance and language settings |
+| `/continue` | Reopen the last saved reading position |
+| `/help` | Show contextual help |
+| `/refresh` | Refresh the library catalog |
+| `/quit` | Save and exit |
 
-Open **Settings** with \`F3\`, the home option or \`/settings\`. Changes apply immediately and persist with the selected library. The terminal controls font size; in Windows Terminal, use \`Ctrl\` + \`+\` / \`-\` or \`Ctrl\` + mouse wheel.
+Open **Settings** with `F3`, the home option or `/settings`. Changes apply immediately and persist with the selected library. The terminal controls font size; in Windows Terminal, use `Ctrl` + `+` / `-` or `Ctrl` + mouse wheel.
 
 ## Data, backups and privacy
 
 LER does not move or copy your books. Application-owned data is stored inside the cloned repository:
 
-\`\`\`text
+```text
 LER/
 ├── .ler/
 │   ├── libraries/<library-id>/   # progress, tabs, bookmarks, preferences, catalog
@@ -191,31 +191,31 @@ LER/
 ├── src/                          # application source
 ├── tests/                        # automated tests
 └── install.cmd / install.ps1     # Windows installation helpers
-\`\`\`
+```
 
-All runtime directories are gitignored and created lazily. Back up \`.ler/\` if you want to preserve reading data. Identical EPUB bytes retain their identity when a file is renamed; reopening a moved file can reconnect its saved progress. The first opening of an old library migrates legacy \`.leitor/\` data into \`.ler/\` and preserves unknown files.
+All runtime directories are gitignored and created lazily. Back up `.ler/` if you want to preserve reading data. Identical EPUB bytes retain their identity when a file is renamed; reopening a moved file can reconnect its saved progress. The first opening of an old library migrates legacy `.leitor/` data into `.ler/` and preserves unknown files.
 
 ## Development
 
-Dependencies are pinned in \`bun.lock\`. With Bun installed:
+Dependencies are pinned in `bun.lock`. With Bun installed:
 
-\`\`\`sh
+```sh
 bun install --frozen-lockfile
 bun run typecheck
 bun test
-\`\`\`
+```
 
 If Bun is not installed globally, the repository's installer can bootstrap it through npm. For a direct local run on Windows:
 
-\`\`\`powershell
+```powershell
 .\node_modules\.bin\bun.cmd run start
-\`\`\`
+```
 
 The CI workflow runs type checking and the full test suite on Windows for every push and pull request.
 
 ## Project structure
 
-\`\`\`text
+```text
 src/
 ├── app.tsx               # OpenTUI/Solid application shell and interactions
 ├── book.ts               # EPUB reading, normalization and image resolution
@@ -229,7 +229,7 @@ src/
 ├── search.worker.ts      # Background in-book search
 ├── storage.ts            # State, backups, migration and library isolation
 └── components/           # Small reusable UI components
-\`\`\`
+```
 
 ## Current limitations
 
@@ -245,4 +245,3 @@ See [PROJECT_PLAN.md](PROJECT_PLAN.md) for the remaining work before a v0.1.0 re
 ## License
 
 LER is released under the [MIT License](LICENSE).
-
