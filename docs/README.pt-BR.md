@@ -103,6 +103,8 @@ Use `i` sobre uma imagem para ampliá-la. Busca textual roda em worker canceláv
 
 ## Aparência e sumário
 
+A home usa uma logo de blocos pixelados, com letras claras e detalhes em azul suave. Uma onda discreta percorre a base, com pausas entre os ciclos. A animação pausa durante a busca e quando um painel está aberto; terminais menores usam uma versão compacta estática. Para desativar o efeito, abra **Configurações** (F3) e desligue **Animação da logo**. A escolha fica salva por biblioteca.
+
 A aba **Configurações** (F3, opção na home ou `/config`) permite alterar fundo e texto usando cores `#RRGGBB`, largura da coluna, espaçamento, altura das imagens, idioma e protocolo gráfico. Use ↑↓ para selecionar, ←→ para ajustar números e Enter para editar cores. As preferências são aplicadas imediatamente e salvas em `.ler/libraries/<id>/state.json`, dentro do LER.
 
 Imagens ocupam até 80% da altura disponível por padrão; ajuste de 30% a 100%. Clique numa imagem ou use `i` quando ela estiver visível para ampliá-la. A proporção original é preservada, portanto uma imagem muito larga pode ficar limitada pela largura da coluna.

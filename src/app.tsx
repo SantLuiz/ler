@@ -6,7 +6,8 @@ import { openBook, layout, tocAnchor, type Book, type Anchor } from './book';
 import { store, type State } from './storage';
 import { preferences, imageRows, type Preferences } from './preferences';
 import {searchCatalog,type Catalog,type CatalogEntry} from './catalog';
-import {LOGO,matchingCommands,folderMatches,type HomeAction} from './home';
+import {matchingCommands,folderMatches,type HomeAction} from './home';
+import {HomeLogo} from './components/HomeLogo';
 import {KeyHints} from './components/KeyHints';
 import {previousPage} from './pagination';
 import {bookFormat,bookTitle} from './formats';
@@ -76,9 +77,9 @@ export function App(props: { root: string; appDirectory?: string; state: State; 
   const libraryPath = path.resolve(root);
   const footerPathWidth = () => Math.max(1, dimensions().width - 4 - (home() ? 12 : 0));
   const footerRows = () => book() || busy() ? 1 : Math.max(1, Math.ceil(Bun.stringWidth(libraryPath) / footerPathWidth()));
-  const settingsText = () => language()==='en' ? ['Background','Text color','Reading width','Image height','Line spacing','Image protocol','Language','Reset appearance'] : ['Cor do fundo','Cor do texto','Largura da leitura','Altura das imagens','Espaçamento entre linhas','Protocolo de imagem','Idioma','Restaurar aparência'];
-  const values = () => [prefs().background,prefs().foreground,String(prefs().readingWidth),prefs().imagePercent+'%',String(prefs().lineGap),protocol(),language(),'↵'];
-  function changeSetting(delta = 1) { const index=setting(); if(index<2) { setColorField(index===0?'background':'foreground');setQuery(prefs()[index===0?'background':'foreground']);setPanel('color'); } else if(index===2)updatePrefs({readingWidth:prefs().readingWidth+delta*4});else if(index===3)updatePrefs({imagePercent:prefs().imagePercent+delta*10});else if(index===4)updatePrefs({lineGap:prefs().lineGap+delta});else if(index===5)setProtocol(protocol()==='auto'?'blocks':'auto');else if(index===6){state.lang=language()==='en'?'pt-BR':'en';setLanguage(state.lang);void persistence?.save();}else updatePrefs(preferences()); }
+  const settingsText = () => language()==='en' ? ['Background','Text color','Reading width','Image height','Line spacing','Image protocol','Language','Logo animation','Reset appearance'] : ['Cor do fundo','Cor do texto','Largura da leitura','Altura das imagens','Espaçamento entre linhas','Protocolo de imagem','Idioma','Animação da logo','Restaurar aparência'];
+  const values = () => [prefs().background,prefs().foreground,String(prefs().readingWidth),prefs().imagePercent+'%',String(prefs().lineGap),protocol(),language(),prefs().logoAnimation===false?label('Desligada','Off'):label('Ligada','On'),'↵'];
+  function changeSetting(delta = 1) { const index=setting(); if(index<2) { setColorField(index===0?'background':'foreground');setQuery(prefs()[index===0?'background':'foreground']);setPanel('color'); } else if(index===2)updatePrefs({readingWidth:prefs().readingWidth+delta*4});else if(index===3)updatePrefs({imagePercent:prefs().imagePercent+delta*10});else if(index===4)updatePrefs({lineGap:prefs().lineGap+delta});else if(index===5)setProtocol(protocol()==='auto'?'blocks':'auto');else if(index===6){state.lang=language()==='en'?'pt-BR':'en';setLanguage(state.lang);void persistence?.save();}else if(index===7)updatePrefs({logoAnimation:prefs().logoAnimation===false});else updatePrefs(preferences()); }
   const lines = createMemo(() => book() ? layout(book()!, width(), chapter()) : []);
   const anchor = (): Anchor => lines()[line()]?.anchor ?? { chapter: chapter(), block: 0, offset: 0 };
   function remember() { const b = book(); if (b && state.books[b.id]) {state.books[b.id].anchor = anchor();state.lastRead=b.id;setLastReadId(b.id);} state.tabs = tabs().map(b => b.id); state.active = b?.id; void persistence?.save().catch(e => setStatus(String(e))); }
@@ -122,7 +123,7 @@ export function App(props: { root: string; appDirectory?: string; state: State; 
     if (panel() === 'search' || panel()==='color') return;
     if(panel()==='marks' && e.name==='d') {state.books[book()!.id].bookmarks.splice(selected(),1);remember();setSelected(Math.max(0,selected()-1));setPanel('');return;}
     if (panel()) { const size=panel()==='commands'?4:menu().length; if (e.name === 'down'||e.name==='j') setSelected(Math.min(Math.max(0,size-1),selected()+1)); if(e.name === 'up'||e.name==='k') setSelected(Math.max(0,selected()-1));if(e.name==='home')setSelected(0);if(e.name==='end')setSelected(Math.max(0,size-1)); if (e.name === 'return') { if(panel() === 'commands') { const choice=selected()%4; if(choice===0) { state.lang=language()==='en'?'pt-BR':'en'; setLanguage(state.lang); } if(choice===1) void browse(); if(choice===2) setProtocol(protocol()==='auto'?'blocks':'auto'); if(choice===3) { remember(); void exit(); } } else { const result=menu()[selected()]; if(result) jump(result.anchor); } setPanel(''); } return; }
-    if(active()===-2) { if(e.name==='down'||e.name==='j')setSetting(Math.min(7,setting()+1));if(e.name==='up'||e.name==='k')setSetting(Math.max(0,setting()-1));if(['right','return','space'].includes(e.name)){e.preventDefault();changeSetting(1);}if(e.name==='left'){e.preventDefault();changeSetting(-1);}return; }
+    if(active()===-2) { if(e.name==='down'||e.name==='j')setSetting(Math.min(8,setting()+1));if(e.name==='up'||e.name==='k')setSetting(Math.max(0,setting()-1));if(['right','return','space'].includes(e.name)){e.preventDefault();changeSetting(1);}if(e.name==='left'){e.preventDefault();changeSetting(-1);}return; }
     if (!book()) { if(e.sequence==='/'){e.preventDefault();switchTab(-3);} if(e.name==='down') setSelected(Math.min(entries().length-1,selected()+1)); if(e.name==='up') setSelected(Math.max(0,selected()-1)); if(e.name==='backspace' && directory()!==root) void browse(path.dirname(directory())); if(e.name==='return') { const entry=entries()[selected()]; if(entry) entry.dir ? void browse(entry.full) : void load(entry.full); } return; }
     if(pdf()) {
       const pageKeys=['pagedown','pageup','space','right','left','down','up','j','k','home','end'];
@@ -163,7 +164,7 @@ export function App(props: { root: string; appDirectory?: string; state: State; 
     const actionLabel=(action:HomeAction)=>({folders:label('Biblioteca','Folders'),continue:label('Continuar','Resume'),settings:label('Aparência','Appearance'),help:label('Ajuda','Help'),refresh:label('Atualizar','Refresh'),quit:label('Sair','Quit')})[action];
     return <box width={homeWidth()} flexDirection="column" gap={1}>
       <box alignItems="center" flexDirection="column" marginBottom={1}>
-        <text fg="#e3e3e3" height={dimensions().height>=28?5:1}>{dimensions().height>=28?LOGO:'L E R'}</text>
+        <HomeLogo size={libraryQuery().trim()?'small':dimensions().height>=38&&dimensions().width>=76?'large':dimensions().height>=28&&dimensions().width>=68?'medium':'small'} animate={!panel()&&!libraryQuery().trim()&&prefs().logoAnimation!==false}/>
         <text fg="#777777">Leitor Extremamente Reduzido</text>
       </box>
       <box backgroundColor="#202020" border={['left']} borderColor="#73a5df" paddingLeft={2} paddingRight={2} paddingTop={1} paddingBottom={1} flexDirection="column">

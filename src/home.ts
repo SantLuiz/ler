@@ -1,4 +1,3 @@
-export const LOGO = '██      ██████  █████ \n██      ██      ██  ██\n██      █████   █████ \n██      ██      ██ ██ \n██████  ██████  ██  ██';
 export type HomeAction = 'folders' | 'settings' | 'continue' | 'help' | 'refresh' | 'quit';
 export const commands: {name:string; alias:string; action:HomeAction; pt:string; en:string}[] = [
  {name:'/biblioteca',alias:'/library',action:'folders',pt:'Explorar pastas',en:'Browse folders'},
