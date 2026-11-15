@@ -26,7 +26,7 @@ async function main() {
   const opened:Book[]=[];let renderer:Awaited<ReturnType<typeof createCliRenderer>>|undefined;let exiting=false;
   async function exit(){if(exiting)return;exiting=true;try{await persistence?.save();}finally{opened.forEach(book=>book.close());try{await persistence?.close();}finally{renderer?.destroy();}}}
   const interrupt=()=>void exit();process.on('SIGINT',interrupt);process.on('SIGTERM',interrupt);
-  try{renderer=await createCliRenderer({exitOnCtrlC:false});renderer.setTerminalTitle('LER — Leitor Extremamente Reduzido');await render(()=><App root={root} appDirectory={appDirectory} state={state} warning={warning} persistence={persistence} opened={opened} exit={exit}/>,renderer);}
+  try{renderer=await createCliRenderer({exitOnCtrlC:false,consoleOptions:{title:'Console · Esc/F12: fechar / close'}});renderer.setTerminalTitle('LER — Leitor Extremamente Reduzido');await render(()=><App root={root} appDirectory={appDirectory} state={state} warning={warning} persistence={persistence} opened={opened} exit={exit}/>,renderer);}
   catch(e){await exit();throw e;}
 }
 await main().catch(e=>{console.error(`LER: ${e.message}\nUse LER --help para ver as opções.`);process.exitCode=1;});

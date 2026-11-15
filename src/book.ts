@@ -40,7 +40,9 @@ export async function openBook(filename: string): Promise<Book> {
   try {
     const entries = new Map<string, yauzl.Entry>();
     await new Promise<void>((resolve, reject) => { zip.on('error', reject); zip.on('entry', e => { entries.set(e.fileName, e); if (entries.size > 20000) { reject(new Error('Too many ZIP entries')); return; } zip.readEntry(); }); zip.on('end', resolve); zip.readEntry(); });
+    const encrypted = new Set<string>();
     const resource = async (href: string) => {
+      if (encrypted.has(href)) throw new Error(`Recurso criptografado não suportado / Encrypted resource is unsupported: ${href}`);
       const entry = entries.get(href); if (!entry) throw new Error(`Missing resource: ${href}`);
       if (entry.uncompressedSize > 32 * 1024 * 1024) throw new Error('Resource exceeds 32 MiB');
       const stream = await new Promise<NodeJS.ReadableStream>((resolve, reject) => zip.openReadStream(entry, (e, s) => e ? reject(e) : resolve(s!)));
@@ -49,7 +51,17 @@ export async function openBook(filename: string): Promise<Book> {
       return Buffer.concat(chunks);
     };
     const xml = async (href: string) => parseDocument(Buffer.from(await resource(href)).toString('utf8'), { xmlMode: true });
-    if (entries.has('META-INF/encryption.xml')) throw new Error('Encrypted EPUB is unsupported');
+    if (entries.has('META-INF/encryption.xml')) {
+      const encryption = await xml('META-INF/encryption.xml');
+      for (const data of all(encryption, 'EncryptedData')) {
+        const references = all(data, 'CipherReference');
+        if (!references.length) throw new Error('Invalid EPUB encryption metadata');
+        for (const ref of references) {
+          if (!ref.attribs?.URI) throw new Error('Invalid EPUB encryption resource');
+          encrypted.add(resolveHref('encryption.xml', ref.attribs.URI));
+        }
+      }
+    }
     const container = await xml('META-INF/container.xml'); const opf = all(container, 'rootfile')[0]?.attribs?.['full-path']; if (!opf) throw new Error('Missing EPUB package');
     const pkg = await xml(opf); if (all(pkg, 'meta').some(n => n.attribs?.property === 'rendition:layout' && text(n).trim() === 'pre-paginated')) throw new Error('Fixed layout EPUB is unsupported');
     const manifest = new Map<string, any>(all(pkg, 'item').map(n => [n.attribs.id, n.attribs]));

@@ -1,5 +1,5 @@
-import { useKeyboard, useTerminalDimensions } from '@opentui/solid';
-import { createSignal, createMemo, createEffect, createResource, onCleanup, on, For, Show } from 'solid-js';
+import { useKeyboard, useTerminalDimensions, useRenderer } from '@opentui/solid';
+import { batch, createSignal, createMemo, createEffect, createResource, onCleanup, on, For, Show } from 'solid-js';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { openBook, layout, tocAnchor, type Book, type Anchor } from './book';
@@ -17,6 +17,7 @@ export function App(props: { root: string; appDirectory?: string; state: State; 
   const { root, state, persistence, opened, exit } = props; const warning = props.warning ?? '';
   const appDirectory=props.appDirectory??path.resolve(import.meta.dir,'..');
   const dimensions = useTerminalDimensions(); const [language, setLanguage] = createSignal(state.lang);
+  const renderer = useRenderer();
   const t = (key: keyof typeof dictionary) => dictionary[key][language() === 'en' ? 0 : 1];
   const label=(pt:string,en:string)=>language()==='pt-BR'?pt:en;
   const [tabs, setTabs] = createSignal<Book[]>([]); const [active, setActive] = createSignal(-1);
@@ -65,15 +66,18 @@ export function App(props: { root: string; appDirectory?: string; state: State; 
   const pictureHeight = () => imageRows(height(), prefs().imagePercent);
   const menuRows = () => Math.max(1, dimensions().height - 14);
   const textHeight = () => 1 + prefs().lineGap;
+  const libraryPath = path.resolve(root);
+  const footerPathWidth = () => Math.max(1, dimensions().width - 4 - (home() ? 12 : 0));
+  const footerRows = () => book() || busy() ? 1 : Math.max(1, Math.ceil(Bun.stringWidth(libraryPath) / footerPathWidth()));
   const settingsText = () => language()==='en' ? ['Background','Text color','Reading width','Image height','Line spacing','Image protocol','Language','Reset appearance'] : ['Cor do fundo','Cor do texto','Largura da leitura','Altura das imagens','Espaçamento entre linhas','Protocolo de imagem','Idioma','Restaurar aparência'];
   const values = () => [prefs().background,prefs().foreground,String(prefs().readingWidth),prefs().imagePercent+'%',String(prefs().lineGap),protocol(),language(),'↵'];
   function changeSetting(delta = 1) { const index=setting(); if(index<2) { setColorField(index===0?'background':'foreground');setQuery(prefs()[index===0?'background':'foreground']);setPanel('color'); } else if(index===2)updatePrefs({readingWidth:prefs().readingWidth+delta*4});else if(index===3)updatePrefs({imagePercent:prefs().imagePercent+delta*10});else if(index===4)updatePrefs({lineGap:prefs().lineGap+delta});else if(index===5)setProtocol(protocol()==='auto'?'blocks':'auto');else if(index===6){state.lang=language()==='en'?'pt-BR':'en';setLanguage(state.lang);void persistence?.save();}else updatePrefs(preferences()); }
   const lines = createMemo(() => book() ? layout(book()!, width(), chapter()) : []);
   const anchor = (): Anchor => lines()[line()]?.anchor ?? { chapter: chapter(), block: 0, offset: 0 };
   function remember() { const b = book(); if (b && state.books[b.id]) {state.books[b.id].anchor = anchor();state.lastRead=b.id;setLastReadId(b.id);} state.tabs = tabs().map(b => b.id); state.active = b?.id; void persistence?.save().catch(e => setStatus(String(e))); }
-  function jump(a: Anchor) { setChapter(Math.min(a.chapter, book()!.chapters.length - 1)); const ls = layout(book()!, width(), chapter()); let index = 0;for(let i=0;i<ls.length;i++)if(ls[i].anchor.block===a.block&&ls[i].anchor.offset<=a.offset)index=i;setLine(index); }
-  function switchTab(index: number) { const old=book();if(old){setLastBook(old);searches.set(old.id,{query:query(),results:results(),selected:selected()});}remember();searchWorker?.terminate();setActive(index===-3?-1:index);setHomeFocus(0); setPanel('');if(book()){setLastBook(book());jump(state.books[book()!.id].anchor);const saved=searches.get(book()!.id);setQuery(saved?.query??'');setResults(saved?.results??[]);setSelected(saved?.selected??0);} }
-  function closeTab(index:number){remember();const b=tabs()[index];if(!b)return;setTabs(tabs().filter(x=>x!==b));b.close();setActive(-1);remember();}
+  function jump(a: Anchor) { batch(()=>{setChapter(Math.max(0,Math.min(Number.isFinite(a.chapter)?Math.trunc(a.chapter):0, book()!.chapters.length - 1))); const ls = layout(book()!, width(), chapter()); let index = 0;for(let i=0;i<ls.length;i++)if(ls[i].anchor.block===a.block&&ls[i].anchor.offset<=a.offset)index=i;setLine(index);}); }
+  function switchTab(index: number) { batch(()=>{const old=book();if(old){setLastBook(old);searches.set(old.id,{query:query(),results:results(),selected:selected()});}remember();searchWorker?.terminate();setActive(index===-3?-1:index);setHomeFocus(0); setPanel('');if(book()){setLastBook(book());jump(state.books[book()!.id].anchor);const saved=searches.get(book()!.id);setQuery(saved?.query??'');setResults(saved?.results??[]);setSelected(saved?.selected??0);}}); }
+  function closeTab(index:number){batch(()=>{remember();const b=tabs()[index];if(!b)return;setTabs(tabs().filter(x=>x!==b));b.close();setActive(-1);remember();});}
   async function browse(dir = directory()) { try { const list = await fs.readdir(dir, { withFileTypes: true }); setEntries(list.filter(e => !['.git', '.leitor', '.ler', 'node_modules'].includes(e.name) && path.join(dir, e.name) !== appDirectory && (e.isDirectory() || /\.epub$/i.test(e.name))).map(e => ({ name: e.name, full: path.join(dir, e.name), dir: e.isDirectory() })).sort((a,b) => Number(b.dir)-Number(a.dir) || a.name.localeCompare(b.name))); setDirectory(dir); setSelected(0); } catch(e) { setStatus(String(e)); } }
   async function load(file: string, restore = false) { setBusy(true); try { const b = await openBook(file); const existing = tabs().findIndex(t => t.id === b.id); if (existing >= 0) { b.close(); switchTab(existing); return; } opened.push(b); state.books[b.id] ??= { file: path.relative(root!, file), anchor: { chapter: 0, block: 0, offset: 0 }, bookmarks: [] }; state.books[b.id].file = path.relative(root!, file); setTabs([...tabs(), b]); switchTab(tabs().length - 1); if (!restore) remember(); } catch(e) { setStatus(String(e)); } finally { setBusy(false); } }
   async function startup() { const ids = [...state.tabs];const current=lastReadId();await browse();for (const id of ids) { const saved = state.books[id]; if (saved) await load(path.join(root!, saved.file), true); }const previous=tabs().find(b=>b.id===current);switchTab(-1);setLastBook(previous);setLastReadId(current);state.lastRead=current; }
@@ -91,6 +95,12 @@ export function App(props: { root: string; appDirectory?: string; state: State; 
   const menu = createMemo(() => panel() === 'toc' && book() ? (book()!.toc.length ? book()!.toc.flatMap(c=>{const anchor=tocAnchor(book()!,c.href);return anchor?[{label:c.label,anchor}]:[];}) : book()!.chapters.map((c,i) => ({ label:c.title, anchor:{chapter:i,block:0,offset:0} }))) : panel() === 'marks' && book() ? state.books[book()!.id].bookmarks.map(m => ({ label:m.excerpt,anchor:m.anchor })) : results());
   useKeyboard(e => {
     if (e.ctrl && e.name === 'c') { remember(); clearInterval(autosave); void exit(); return; }
+    if (e.name === 'f12' || (e.name === 'escape' && renderer.console.visible)) {
+      e.preventDefault();e.stopPropagation();
+      if (renderer.console.visible) renderer.console.hide(); else renderer.console.show();
+      renderer.requestRender();return;
+    }
+    if (renderer.console.visible) {e.preventDefault();return;}
     if (e.name === 'escape') {searchWorker?.terminate();if(panel())setPanel('');else if(home()){setLibraryQuery('');setHomeFocus(0);}return; }
     if (e.name === 'f6') { const order=[-1,...tabs().map((_,i)=>i),-2];switchTab(order[(order.indexOf(active())+(e.shift?-1:1)+order.length)%order.length]); return; }
     if (e.name === 'f3') { switchTab(-2); return; }
@@ -156,10 +166,10 @@ export function App(props: { root: string; appDirectory?: string; state: State; 
       <Show when={panel()==='color'}><text fg="#eeeeee">{language()==='en'?'Color (#RRGGBB), Enter to apply':'Cor (#RRGGBB), Enter para aplicar'}</text><input focused value={query()} onInput={setQuery} onSubmit={()=>{if(/^#[0-9a-f]{6}$/i.test(query())){updatePrefs({[colorField()]:query()});setPanel('');}else setStatus(language()==='en'?'Use #RRGGBB':'Use #RRGGBB');}}/></Show>
       <Show when={panel()==='image'&&selectedImage()}><Picture href={selectedImage()} height={Math.max(1,dimensions().height-14)}/></Show>
       <Show when={panel()==='search'}><input focused placeholder={t('search')} value={query()} onInput={q=>{setQuery(q);void search(q);}} onSubmit={()=>{const r=results()[selected()]??results()[0];if(r)jump(r.anchor);setPanel('');}}/><For each={results().slice(Math.max(0,selected()-height()+6),Math.max(height()-5,selected()+1))}>{r=><text fg={results()[selected()]===r?'#7bb4ff':'#eeeeee'} onMouseDown={()=>{jump(r.anchor);setPanel('');}}>{r.label}</text>}</For></Show>
-      <Show when={panel()==='help'}><text>{language()==='en'?'↑↓ j/k · PgUp/PgDn ←→ Space\nF6 tabs · F4 close · F2 commands\n/ search · n/N results · s contents\nb bookmark · Shift+B bookmarks · d delete\ni enlarge image · Esc back · Ctrl+C exit':'↑↓ j/k · PgUp/PgDn ←→ Espaço\nF6 abas · F4 fechar · F2 comandos\n/ buscar · n/N resultados · s sumário\nb marcador · Shift+B lista · d remover\ni ampliar imagem · Esc voltar · Ctrl+C sair'}</text></Show>
+      <Show when={panel()==='help'}><text>{language()==='en'?'↑↓ j/k · PgUp/PgDn ←→ Space\nF6 tabs · F4 close · F2 commands\n/ search · n/N results · s contents\nb bookmark · Shift+B bookmarks · d delete\ni enlarge image · Esc back · Ctrl+C exit':'↑↓ j/k · PgUp/PgDn ←→ Espaço\nF6 abas · F4 fechar · F2 comandos\n/ buscar · n/N resultados · s sumário\nb marcador · Shift+B lista · d remover\ni ampliar imagem · F12 console · Esc voltar · Ctrl+C sair'}</text></Show>
       <Show when={panel()==='commands'}><For each={[t('language'),t('refresh'),t('protocol'),t('quit')]}>{(item,i)=><text fg={selected()%4===i()?'#7bb4ff':'#eeeeee'}>{item}</text>}</For></Show>
       <Show when={panel()==='toc'||panel()==='marks'}><KeyHints items={[["↑↓",label('navegar','navigate')],["enter",label('abrir','open')]]}/><For each={menu().slice(Math.max(0,selected()-menuRows()+1),Math.max(menuRows(),selected()+1))}>{item=><text height={1} width="100%" fg={menu()[selected()]===item?'#ffffff':'#c4cbd6'} bg={menu()[selected()]===item?'#26446b':'#20232a'} onMouseDown={()=>{jump(item.anchor);setPanel('');}}>{menu()[selected()]===item?'› ':'  '}{item.label}</text>}</For></Show>
     </box></Show>
-    <box height={2} flexShrink={0} flexDirection="column"><box flexDirection="row" justifyContent="space-between" height={1}><text fg="#777777">{busy()?t('loading'):book()?`${chapter()+1}/${book()!.chapters.length} · ${Math.round(100*(chapter()+line()/Math.max(1,lines().length))/book()!.chapters.length)}%`:`~ ${path.basename(root)}`}</text><Show when={book()}><KeyHints items={[["/",label('buscar','search')],["s",label('sumário','contents')],["?",label('atalhos','shortcuts')]]}/></Show><Show when={active()===-2}><KeyHints items={[["↑↓",label('selecionar','select')],["←→",label('ajustar','adjust')],["enter",label('editar','edit')]]}/></Show><Show when={home()}><text fg="#666666">LER 0.1.0</text></Show></box><text fg="#888888">{status()}</text></box>
+    <box height={footerRows()+1} flexShrink={0} flexDirection="column"><box flexDirection="row" justifyContent="space-between" height={footerRows()}><text width={book()||busy()?undefined:footerPathWidth()} wrapMode="char" fg="#777777">{busy()?t('loading'):book()?`${chapter()+1}/${book()!.chapters.length} · ${Math.round(100*(chapter()+line()/Math.max(1,lines().length))/book()!.chapters.length)}%`:libraryPath}</text><Show when={book()}><KeyHints items={[["/",label('buscar','search')],["s",label('sumário','contents')],["?",label('atalhos','shortcuts')]]}/></Show><Show when={active()===-2}><KeyHints items={[["↑↓",label('selecionar','select')],["←→",label('ajustar','adjust')],["enter",label('editar','edit')]]}/></Show><Show when={home()}><text width={11} height={1} flexShrink={0} fg="#666666">LER 0.1.0</text></Show></box><text fg="#888888">{status()}</text></box>
   </box>;
 }

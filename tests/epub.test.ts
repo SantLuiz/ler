@@ -15,3 +15,21 @@ test('EPUB spine order, metadata, nav and content identity survive rename',async
  'OPS/nav.xhtml':'<nav epub:type="toc"><a href="a.xhtml">Início</a><a href="b.xhtml">Final</a></nav>'
  }));const b=await openBook(file);expect(b.title).toBe('Livro de teste');expect(b.chapters.map(c=>c.title)).toEqual(['Primeiro','Segundo']);expect(b.toc[0].label).toBe('Início');const id=b.id;b.close();const renamed=path.join(dir,'renamed.epub');await fs.rename(file,renamed);const c=await openBook(renamed);expect(c.id).toBe(id);c.close();}finally{await fs.rm(dir,{recursive:true,force:true});}
 });
+
+test('encrypted unused fonts do not block readable text, while encrypted chapters remain unsupported',async()=>{
+ const dir=await fs.mkdtemp(path.join(os.tmpdir(),'ler-encryption-'));
+ try {
+  const file=path.join(dir,'fixture.epub');
+  const files={
+   'META-INF/container.xml':'<container><rootfile full-path="OPS/book.opf"/></container>',
+   'OPS/book.opf':'<package><manifest><item id="a" href="a.xhtml"/><item id="font" href="fonts/font.otf" media-type="application/vnd.ms-opentype"/></manifest><spine><itemref idref="a"/></spine></package>',
+   'OPS/a.xhtml':'<body><p>Readable test text</p></body>',
+   'OPS/fonts/font.otf':'encrypted font bytes',
+   'META-INF/encryption.xml':'<encryption xmlns:enc="http://www.w3.org/2001/04/xmlenc#"><enc:EncryptedData><enc:EncryptionMethod Algorithm="http://ns.adobe.com/pdf/enc#RC"/><enc:CipherData><enc:CipherReference URI="OPS/fonts/font.otf"/></enc:CipherData></enc:EncryptedData></encryption>'
+  };
+  await fs.writeFile(file,zip(files));const book=await openBook(file);
+  try {expect(book.chapters[0].blocks[0].text).toBe('Readable test text');await expect(book.resource('OPS/fonts/font.otf')).rejects.toThrow('Encrypted resource is unsupported');} finally {book.close();}
+  files['META-INF/encryption.xml']=files['META-INF/encryption.xml'].replace('OPS/fonts/font.otf','OPS/a.xhtml');
+  await fs.writeFile(file,zip(files));await expect(openBook(file)).rejects.toThrow('Encrypted resource is unsupported');
+ } finally {await fs.rm(dir,{recursive:true,force:true});}
+});

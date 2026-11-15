@@ -30,6 +30,8 @@ LER --help
 
 `--choose` pergunta qual pasta usar. Quando iniciado dentro do próprio repositório, o LER usa a pasta pai, onde estão os livros. Uma escolha antiga não substitui a pasta atual. Os livros continuam onde estão; os dados do aplicativo ficam exclusivamente dentro da pasta clonada do LER.
 
+O rodapé da tela inicial mostra o caminho absoluto completo da biblioteca pesquisada, com quebra de linha quando necessário.
+
 Execute os comandos de instalação a partir da raiz do clone, onde fica `package.json`. No PowerShell, o instalador também pode ser executado com `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\install.ps1`. Para remover apenas o comando do PATH, execute o mesmo script com `-Uninstall`; livros e progresso são preservados. Se mover o repositório, reinstale o comando a partir da nova localização.
 
 Para executar sem registrar no PATH: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\install.ps1 -NoPath`, depois `bin\LER.cmd`. Desenvolvedores com Bun podem continuar usando `bun install --frozen-lockfile` e `bun run start`.
@@ -39,6 +41,8 @@ O LER inicia na home e restaura seus livros nas abas. A busca central aceita nom
 Use as setas ou j/k durante a leitura para rolar uma linha; Page Up/Down, ←/→ e Espaço avançam telas. F6 alterna abas, F4 fecha o livro, F5 retorna à home, `/` busca no livro, `s` abre o sumário, `b` alterna um marcador e Shift+B abre a lista. F2 ou Ctrl+P abre comandos. Esc fecha painéis ou limpa a busca da home; Ctrl+C salva e sai.
 
 O botão **Biblioteca** abaixo da busca abre um popup com a estrutura de pastas e filtro por nome. Use ↑↓ e Enter para abrir pastas e livros; Backspace com filtro vazio volta à pasta anterior.
+
+Se o console de diagnóstico aparecer, pressione **Esc** para fechá-lo sem sair do LER. **F12** abre ou fecha o console; enquanto ele estiver aberto, as teclas não alteram a leitura nem a busca. **Ctrl+C** continua salvando e encerrando o aplicativo.
 
 ## Onde ficam os dados
 
@@ -90,3 +94,5 @@ Na busca central da **home** (F5 ou aba LER), digite parte do nome do arquivo, t
 Ao digitar a primeira busca, o catálogo é construído em segundo plano lendo apenas os metadados dos EPUBs. Os resultados aparecem conforme os arquivos são encontrados. O índice é salvo junto do progresso; arquivos inalterados não precisam ter os metadados lidos novamente. Use **Ctrl+R** na home ou `/atualizar` após adicionar, mover ou remover livros. Se o EPUB não tiver autor ou estiver inválido, ainda será encontrado pelo nome do arquivo. A busca dentro do livro continua em `/` durante a leitura.
 
 Limitações atuais: sem DRM, layout fixo ou SVG geral; CSS e ênfase simplificados; busca dentro do livro limitada a mil resultados. Alguns erros ainda são bilíngues. A compatibilidade gráfica no Windows Terminal precisa de conferência manual. Consulte o [README em inglês](../README.md) para detalhes.
+
+Uma indicação de criptografia em recursos não utilizados, como fontes embutidas, não impede a leitura. O LER usa a fonte do terminal e não descriptografa recursos; capítulos criptografados continuam sem suporte.

@@ -130,6 +130,8 @@ LER --version
 
 When the command is launched from inside the cloned repository, LER uses the repository's parent folder as the default library. An explicit path always wins; a remembered library location never silently overrides the current working directory.
 
+The home screen footer shows the full absolute library path, wrapping it across lines when needed.
+
 ## First reading session
 
 1. Start LER from your books folder.
@@ -159,7 +161,9 @@ The first non-empty library query builds a metadata catalog in a worker. It read
 | `d` in bookmarks | Delete the selected bookmark |
 | `i` on an image | Open an enlarged image view |
 | `F2` / `Ctrl+P` | Open the command palette |
-| `Esc` / `Ctrl+C` | Dismiss a panel / save and quit |
+| `F12` | Show / hide the diagnostic console |
+| `Esc` | Dismiss the console or current panel |
+| `Ctrl+C` | Save and quit |
 
 Mouse input can select books and tabs and scroll reading content. Menus also support arrow keys and `Enter`.
 
@@ -246,6 +250,8 @@ src/
 - In-book search returns at most 1,000 matches.
 - SIXEL graphics and image interaction still require validation in a real compatible terminal.
 - Some error messages remain bilingual while localization is being completed.
+
+Encryption metadata for unused resources, such as embedded fonts, does not prevent reading the book. LER uses the terminal font and does not decrypt resources; encrypted chapters remain unsupported.
 
 ## License
 
