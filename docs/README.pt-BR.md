@@ -1,126 +1,358 @@
 # LER — Leitor Extremamente Reduzido
 
-Leitor EPUB, TXT e PDF local para terminal, feito com TypeScript, Solid e OpenTUI. Tela inicial com busca e comandos, abas compactas de livros, marcadores e retomada de leitura. **Versão inicial em desenvolvimento; o MVP ainda precisa de validação visual.**
+Leitor local de EPUB, TXT e PDF para terminal, com abas, marcadores e retomada da leitura. EPUB e TXT são paginados como texto; PDF é exibido como imagens das páginas, com zoom e faixas horizontais de leitura. Sem conta, envio de livros ou telemetria.
+
+[![CI](https://github.com/SantLuiz/ler/actions/workflows/ci.yml/badge.svg)](https://github.com/SantLuiz/ler/actions/workflows/ci.yml)
+[![Licença MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../LICENSE)
 
 [English](../README.md)
 
-## Executar
+**Estado:** versão 0.1.0 em desenvolvimento, com prioridade para Windows. A qualidade gráfica depende do terminal; testes automatizados não substituem a conferência das imagens em uma sessão real.
 
-No Windows, crie uma pasta com seus livros e clone o repositório numa subpasta dela. Instale **Bun 1.4.4+ ou Node.js com npm** antes de executar o instalador. Ele prepara as dependências e adiciona o comando ao PATH do usuário, sem exigir administrador. Windows Terminal 1.22+ permite imagens SIXEL.
+## Instalar e ler seu primeiro livro
 
-Exemplo no CMD:
+A organização recomendada é uma pasta de biblioteca contendo seus livros e uma subpasta `LER` separada, com o aplicativo clonado. Não é necessário importar os livros nem colocá-los dentro do aplicativo.
+
+### 1. Preparar o terminal e os pré-requisitos
+
+Instale **Git para Windows** e uma destas opções: **Bun 1.4.4 ou superior** ou **Node.js com npm**. Quando não há Bun instalado, o instalador usa npm para preparar um Bun local dentro do clone. É necessária conexão à internet para clonar e instalar as dependências; depois, a leitura funciona offline.
+
+Use um terminal com pelo menos **60 colunas e 20 linhas**. Para visualizar PDFs e imagens de EPUB com mais detalhes, use um terminal com suporte a SIXEL ou Kitty. A alternativa em blocos tem menor definição.
+
+O passo a passo principal abaixo usa o **Prompt de Comando (CMD)**. No Windows Terminal, abra uma aba de Prompt de Comando: Windows Terminal é o aplicativo de terminal, enquanto CMD e PowerShell são shells diferentes. Há comandos equivalentes para PowerShell mais abaixo; não cole nele comandos próprios de CMD, como `cd /d` ou `%USERPROFILE%`.
+
+Confira o Git e o runtime escolhido em um terminal recém-aberto:
 
 ```bat
-cd /d D:\Biblioteca
+git --version
+```
+
+Se escolheu Bun, execute `bun --version`. Se escolheu Node.js, execute `node --version` e `npm --version`. Se um comando não for encontrado logo após a instalação, reabra o terminal antes de continuar.
+
+### 2. Criar as pastas da biblioteca
+
+O exemplo usa `Documents\Biblioteca` dentro do seu perfil do Windows. Você pode escolher outro local existente; nesse caso, substitua os caminhos de forma consistente em todo o passo a passo.
+
+No CMD:
+
+```bat
+mkdir "%USERPROFILE%\Documents\Biblioteca"
+mkdir "%USERPROFILE%\Documents\Biblioteca\Ficcao"
+mkdir "%USERPROFILE%\Documents\Biblioteca\Tecnicos"
+mkdir "%USERPROFILE%\Documents\Biblioteca\Textos"
+```
+
+Se uma pasta já existir, mantenha-a e prossiga. As categorias são opcionais; subpastas como `Ficcao\Autor` também funcionam.
+
+### 3. Colocar e organizar os livros
+
+Pelo Explorador de Arquivos, copie seus arquivos `.epub`, `.pdf` e `.txt` para as categorias ou mantenha sua coleção já existente nesse local. Por exemplo:
+
+```text
+Biblioteca/
+├── Ficcao/
+│   └── Autor/
+│       └── Romance.epub
+├── Tecnicos/
+│   └── Manual.pdf
+└── Textos/
+    └── Anotacoes.txt
+```
+
+O LER pesquisa as subpastas recursivamente. Para EPUB, a busca considera nome do arquivo, título e autor dos metadados; TXT e PDF são pesquisados pelo nome do arquivo. Os livros ficam fora do clone do aplicativo, separados do repositório Git dele.
+
+### 4. Clonar o LER dentro da pasta da biblioteca
+
+Entre na raiz da biblioteca e clone o repositório em uma nova subpasta chamada `LER`:
+
+```bat
+cd /d "%USERPROFILE%\Documents\Biblioteca"
 git clone https://github.com/SantLuiz/ler.git LER
 cd LER
+```
+
+A estrutura resultante deve ser:
+
+```text
+Biblioteca/                 raiz da biblioteca: execute LER daqui
+├── Ficcao/                 seus EPUBs e outros livros
+├── Tecnicos/               seus PDFs
+├── Textos/                 seus arquivos TXT
+└── LER/                    aplicativo clonado, não uma pasta de livros
+    ├── bin/LER.cmd
+    ├── scripts/install.cmd
+    ├── scripts/install.ps1
+    ├── src/
+    └── package.json
+```
+
+Não coloque os livros dentro de `Biblioteca\LER`: o aplicativo ignora a própria pasta de instalação na navegação e na indexação. Se você já clonou o LER nesse local, use o clone existente em vez de clonar novamente.
+
+### 5. Instalar e registrar o comando no PATH
+
+Dentro de `Biblioteca\LER`, onde está o arquivo `package.json`, execute:
+
+```bat
 scripts\install.cmd
-cd ..
+```
+
+Aguarde a mensagem de instalação concluída. O instalador prepara as dependências e adiciona **`Biblioteca\LER\bin`** ao PATH do usuário, permitindo chamar `LER` a partir de outras pastas. Não é necessário editar o PATH manualmente nem executar como administrador.
+
+Feche e reabra o terminal para carregar o PATH atualizado. O PATH disponibiliza o comando; ele não escolhe qual pasta será usada como biblioteca.
+
+### 6. Executar o LER a partir da raiz da biblioteca
+
+No novo terminal CMD:
+
+```bat
+cd /d "%USERPROFILE%\Documents\Biblioteca"
 LER
 ```
 
-Depois, abra um terminal em qualquer pasta de livros e execute `LER`. A pasta atual será usada como biblioteca. Se o terminal já estava aberto antes da instalação, reabra-o quando o comando não for encontrado.
+Confira o **caminho completo da biblioteca no rodapé da home**. Ele deve apontar para `Biblioteca`, que contém as categorias, e não para outro diretório de trabalho.
+
+Também é possível informar a biblioteca explicitamente, a partir de qualquer pasta:
 
 ```bat
-LER "D:\Outra Biblioteca"
-LER --choose
-LER --library "D:\Livros" --lang pt-BR
-LER --help
+LER "%USERPROFILE%\Documents\Biblioteca"
 ```
 
-`--choose` pergunta qual pasta usar. Quando iniciado dentro do próprio repositório, o LER usa a pasta pai, onde estão os livros. Uma escolha antiga não substitui a pasta atual. Os livros continuam onde estão; os dados do aplicativo ficam exclusivamente dentro da pasta clonada do LER.
+O argumento é uma **pasta**, não o caminho de um livro individual. Se executar `LER` de dentro de `Biblioteca\Ficcao`, somente essa pasta e suas subpastas serão pesquisadas. Se executar de dentro do clone `LER`, a biblioteca usada será a pasta pai dele.
 
-O rodapé da tela inicial mostra o caminho absoluto completo da biblioteca pesquisada, com quebra de linha quando necessário.
+### 7. Encontrar um livro e começar a ler
 
-Execute os comandos de instalação a partir da raiz do clone, onde fica `package.json`. No PowerShell, o instalador também pode ser executado com `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\install.ps1`. Para remover apenas o comando do PATH, execute o mesmo script com `-Uninstall`; livros e progresso são preservados. Se mover o repositório, reinstale o comando a partir da nova localização.
+1. Digite parte do nome do arquivo na busca da home. Para EPUB, também é possível buscar pelo título ou autor. A pesquisa ignora maiúsculas e acentos e combina todas as palavras digitadas.
+2. Na primeira busca não vazia, aguarde os resultados da indexação. Uma busca vazia não lista todos os livros.
+3. Selecione um resultado com `↑` / `↓` e pressione `Enter`, ou clique nele. Como alternativa, escolha **Biblioteca** abaixo da busca para navegar pelas pastas.
+4. Em EPUB/TXT, use `Page Down`, `Page Up`, setas ou `Espaço` para ler. Em PDF, use os controles de páginas e zoom descritos abaixo.
+5. Pressione `Esc` para salvar a posição, fechar a aba do livro e voltar à home. Se houver painel ou console aberto, o primeiro `Esc` fecha apenas esse painel.
+6. Escolha **Continuar** ou digite `/continuar` para retomar a última leitura. `Ctrl+C` salva e encerra o LER.
 
-Para executar sem registrar no PATH: `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\install.ps1 -NoPath`, depois `bin\LER.cmd`. Desenvolvedores com Bun podem continuar usando `bun install --frozen-lockfile` e `bun run start`.
+Depois de adicionar, mover ou remover livros, pressione **Ctrl+R** na home ou use `/atualizar` para atualizar o catálogo. O catálogo não monitora alterações do sistema de arquivos continuamente.
 
-O LER inicia na home e restaura seus livros nas abas. A busca central aceita nomes de livros/autores ou comandos: `/biblioteca`, `/config`, `/continuar`, `/ajuda`, `/atualizar` e `/sair`. Os equivalentes em inglês também funcionam. Uma busca vazia não lista livros. Use Tab para acessar Biblioteca, Aparência e Ajuda; Continuar aparece quando existe uma leitura salva e reabre o livro na posição guardada, mesmo se a aba foi fechada ou o programa reiniciado. As legendas destacam a tecla e mostram apenas as ações relevantes para a tela atual.
+### Equivalentes no PowerShell
 
-Use as setas ou j/k durante a leitura para rolar uma linha; Page Up/Down, ←/→ e Espaço avançam telas. F6 alterna abas, F4 fecha o livro, F5 retorna à home, `/` busca no livro, `s` abre o sumário, `b` alterna um marcador e Shift+B abre a lista. F2 ou Ctrl+P abre comandos. Durante a leitura, Esc salva a posição e fecha a aba atual, voltando à home. Se houver painel ou console aberto, o primeiro Esc fecha apenas esse painel; na home, limpa a busca. Ctrl+C salva e sai do LER.
+Se preferir PowerShell, os comandos de preparação são:
 
-O botão **Biblioteca** abaixo da busca abre um popup com a estrutura de pastas e filtro por nome. Use ↑↓ e Enter para abrir pastas e livros; Backspace com filtro vazio volta à pasta anterior.
+```powershell
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\Documents\Biblioteca\Ficcao", "$env:USERPROFILE\Documents\Biblioteca\Tecnicos", "$env:USERPROFILE\Documents\Biblioteca\Textos"
+Set-Location "$env:USERPROFILE\Documents\Biblioteca"
+git clone https://github.com/SantLuiz/ler.git LER
+Set-Location .\LER
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\install.ps1
+```
 
-Se o console de diagnóstico aparecer, pressione **Esc** para fechá-lo sem sair do LER. **F12** abre ou fecha o console; enquanto ele estiver aberto, as teclas não alteram a leitura nem a busca. **Ctrl+C** continua salvando e encerrando o aplicativo.
+Adicione os livros pelo Explorador de Arquivos conforme explicado acima. Após instalar, feche e reabra o terminal e execute:
 
-## TXT e PDF
+```powershell
+Set-Location "$env:USERPROFILE\Documents\Biblioteca"
+LER
+```
 
-Arquivos TXT e PDF aparecem na biblioteca e na busca pelo nome do arquivo; a busca por título e autor nos metadados continua disponível para EPUB. Use Ctrl+R na home para atualizar o catálogo após adicionar arquivos.
+Pule o comando de clonagem se a pasta `LER` já contiver o repositório.
 
-TXT aceita UTF-8, UTF-16 com BOM e Windows-1252 como alternativa. Preserva quebras de linha e oferece os mesmos controles de leitura, busca textual, abas, marcadores e progresso do EPUB. Arquivos vazios ou binários são recusados; o limite é 64 MiB.
+## Escolha da biblioteca e manutenção
 
-PDF é exibido como imagens das páginas, preservando texto, digitalizações, tabelas e ilustrações. A renderização usa [PDFium](https://github.com/hyzyla/pdfium), localmente e em segundo plano, sem aplicativo externo ou OCR. As páginas são renderizadas conforme a navegação, mantendo no máximo duas imagens em cache por documento aberto.
+| Comando | Finalidade |
+| --- | --- |
+| `LER` | Usar a pasta atual, ou a pasta pai do clone quando iniciado dentro dele |
+| `LER "D:\Livros"` | Usar uma pasta específica como biblioteca |
+| `LER --library "D:\Livros"` | Selecionar a mesma pasta por uma opção explícita |
+| `LER --choose` | Perguntar qual pasta abrir |
+| `LER --lang pt-BR` / `LER --lang en` | Selecionar o idioma da interface |
+| `LER --check` | Verificar se a pasta selecionada existe e informá-la, sem abrir a interface nem criar estado de leitura |
+| `LER --help` / `LER --version` | Mostrar ajuda ou versão |
+
+Uma biblioteca escolhida anteriormente não substitui o diretório atual. Cada raiz selecionada tem dados de sessão e preferências separados.
+
+Para atualizar uma instalação existente, saia do LER primeiro e execute no CMD:
+
+```bat
+cd /d "%USERPROFILE%\Documents\Biblioteca\LER"
+git pull --ff-only
+scripts\install.cmd
+```
+
+Reinicie o LER depois de atualizar. Esse procedimento usa o mesmo clone e preserva os dados de leitura em `.ler/`, ignorados pelo Git. Faça backup dessa pasta antes de trocar de instalação.
+
+Na raiz do clone, estes comandos de PowerShell atendem a outras opções de instalação:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\install.ps1 -NoPath
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\install.ps1 -SkipDependencies
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\install.ps1 -Uninstall
+```
+
+Use um dos comandos conforme a necessidade: `-NoPath` instala sem registrar o comando; `-SkipDependencies` registra depois que as dependências já estiverem instaladas; `-Uninstall` remove apenas a entrada dessa instalação no PATH do usuário, preservando arquivos e leituras. Sem registrar no PATH, execute `bin\LER.cmd` a partir da raiz do clone. Antes de mover a instalação, remova o registro no local antigo e instale novamente no novo.
+
+Se `LER` não for encontrado, reabra o terminal e confira `where LER` no CMD ou `Get-Command LER -All` no PowerShell. Vários resultados podem indicar várias instalações; atualize aquela usada pelo comando. Se necessário, execute novamente o instalador a partir desse clone.
+
+## Controles de leitura
+
+| Tecla | Ação |
+| --- | --- |
+| `↑` / `↓`, `j` / `k` | Rolar uma linha em EPUB/TXT |
+| `←` / `→`, `Page Up` / `Page Down`, `Espaço` | Navegar por telas em EPUB/TXT |
+| `Home` / `End` | Início / fim do capítulo de texto atual |
+| `F6` / `Shift+F6` | Alternar entre abas de livros, home e configurações |
+| `Esc` / `F4` | Salvar e fechar o livro atual; `Esc` fecha primeiro um painel/console aberto |
+| `F5` | Voltar à home sem fechar as abas de livros |
+| `F3` | Aparência e idioma |
+| `/` | Buscar texto em EPUB/TXT; mostrar comandos na home |
+| `n` / `Shift+N` | Próximo / anterior resultado da busca textual |
+| `s` | Sumário do EPUB, seção do TXT ou lista de páginas do PDF |
+| `b` / `Shift+B` | Alternar marcador / listar marcadores |
+| `d` nos marcadores | Excluir o marcador selecionado |
+| `i` sobre uma imagem do EPUB | Ampliar a imagem |
+| `F2` / `Ctrl+P` | Paleta de comandos |
+| `F12` | Abrir / fechar o console de diagnóstico |
+| `Ctrl+C` | Salvar e sair |
+
+A navegação por pastas usa setas e `Enter`; `Backspace` com o filtro vazio volta à pasta anterior. Na home, `j` e `k` são texto da busca, não atalhos para selecionar resultados.
+
+Comandos da home: `/biblioteca`, `/config`, `/continuar`, `/ajuda`, `/atualizar`, `/sair`. Os equivalentes em inglês `/library`, `/settings`, `/continue`, `/help`, `/refresh`, `/quit` também funcionam.
+
+## Formatos e controles de PDF
+
+| Formato | Modo de leitura | Limitações |
+| --- | --- | --- |
+| EPUB | Texto fluido, capítulos, sumário e imagens raster | Sem DRM ou EPUB de layout fixo; CSS, tipografia e ênfase simplificados; sem renderização geral de SVG |
+| TXT | Texto com quebras de linha preservadas; UTF-8, UTF-16 com BOM e Windows-1252 como alternativa | Arquivos vazios/binários recusados; até 64 MiB |
+| PDF | Páginas renderizadas localmente como imagens, incluindo digitalizações, tabelas e ilustrações | Sem busca, seleção de texto ou OCR; arquivos que exigem senha não são suportados; até 256 MiB / 20 mil páginas |
+
+A busca textual em EPUB/TXT retorna até mil resultados. Metadados de criptografia em recursos não usados do EPUB, como fontes embutidas, não bloqueiam o texto legível; o LER não descriptografa recursos. Alguns erros ainda são bilíngues.
+
+PDF usa [PDFium](https://github.com/hyzyla/pdfium) em um worker em segundo plano. As páginas são renderizadas sob demanda, com até duas páginas PNG em cache por documento aberto. Não é necessário um visualizador externo de PDF.
 
 | Tecla no PDF | Ação |
 | --- | --- |
-| `Page Up` / `Page Down` | Página anterior / próxima; com zoom, faixa horizontal anterior / próxima |
-| `Espaço` | Próxima faixa ou página |
-| Setas ou `j` / `k` | Trocar páginas em 100%; deslocar a área visível com zoom |
+| `Page Up` / `Page Down`, `Espaço` | Página anterior / próxima; com zoom, faixa horizontal anterior / próxima (`Espaço` avança) |
+| Setas / `j` / `k` | Trocar páginas em 100%; deslocar a área visível com zoom |
 | `+` / `-` (`=` ou `i` também ampliam) | Ajustar zoom entre 100% e 400% |
 | `0` | Mostrar a página inteira |
 | `Home` / `End` | Primeira / última página |
 | `s` | Listar páginas |
 | `b` / `Shift+B` | Marcar página / listar marcadores |
-| `Esc` | Salvar e fechar a aba, ou fechar um painel aberto |
 
-O zoom aumenta a largura ocupada pela página, aproveitando as laterais disponíveis do terminal. Quando a página ultrapassa a altura da tela, a leitura é dividida em faixas horizontais com pequena sobreposição. O rodapé indica a faixa atual; depois da última faixa, Page Down avança para a próxima página mantendo o zoom. O deslocamento horizontal só é necessário quando a página ampliada também ultrapassa a largura do terminal. `0` volta à página inteira.
+O zoom aumenta a largura ocupada pela página. Conteúdo mais alto é lido em faixas horizontais com pequena sobreposição e indicador da faixa no rodapé. Na última faixa, `Page Down` avança para a página seguinte mantendo o zoom. O deslocamento horizontal só é necessário quando a página ampliada também ultrapassa a largura do terminal. A roda do mouse troca páginas em 100% e desloca verticalmente a área ampliada. A retomada de PDF salva a página; zoom e posição na faixa não são persistidos.
 
-A roda do mouse troca páginas em 100% e desloca verticalmente a área ampliada. PDF nesse modo não tem busca nem seleção de texto. PDFs que exigem senha não são abertos; o limite é 256 MiB e 20 mil páginas. A qualidade depende do suporte gráfico do terminal: SIXEL/Kitty oferecem mais detalhes que o modo de blocos.
+## Aparência e animação
 
-## Onde ficam os dados
+Abra **Configurações** com `F3` ou `/config`. Use `↑↓` para selecionar uma linha e `←→` para ajustar; pressione `Enter` para editar uma cor como `#RRGGBB`. As opções incluem fundo/texto, largura de leitura do texto, espaçamento, altura de imagens do EPUB, protocolo gráfico e idioma. As alterações ficam salvas por biblioteca. A altura de imagens do EPUB varia de 30% a 100% da área de leitura, com padrão de 80%; PDF usa sua própria visualização de página.
 
-O único ajuste persistente do LER fora do repositório é o PATH, feito pelo instalador. Progresso, marcadores, abas, preferências, catálogo, backups, caches e temporários usados pelo aplicativo ficam em `LER/.ler/`. As dependências ficam em `LER/node_modules/`.
+A logo pixelada tem pontos azuis cintilando dentro e ao redor das letras, um campo de estrelas ao fundo e uma fita de LED que acende da esquerda para a direita. A busca e os painéis abertos pausam os efeitos. Em terminais menores, a logo fica compacta.
+
+| Configuração | Opções |
+| --- | --- |
+| Efeitos da home | Ligados / Desligados para animação da logo, fita de LED e estrelas ao fundo |
+| Tamanho dos pixels | Pequeno / Médio / Grande; o tamanho físico depende da fonte e do zoom do terminal |
+| Quantidade de pixels | 25%–200%, em passos de 25%; afeta a logo e o fundo |
+
+O padrão é Médio / 100%, com até 240 pontos ao fundo; em 200%, o limite sobe para 480. As escolhas são preservadas mesmo com os efeitos desligados. O tamanho da fonte pertence ao terminal: no Windows Terminal, use `Ctrl` + `+` / `-` ou `Ctrl` + roda do mouse.
+
+## Dados, backups e pastas do projeto
 
 ```text
 Biblioteca/
-├── livros e pastas…
+├── Ficcao/, Tecnicos/, Textos/   seus livros, fora do clone Git
 └── LER/
-    ├── src/
-    ├── tests/                testes automatizados
-    ├── scripts/              install.cmd, install.ps1 e preload do runtime
-    ├── bin/                  comando LER.cmd registrado no PATH
-    ├── docs/                 README em português
-    ├── node_modules/          criado na instalação
-    └── .ler/                 criado durante instalação/uso
-        ├── libraries/<id>/   estado separado por biblioteca
-        ├── cache/            caches locais
-        ├── tmp/              arquivos temporários
-        └── legacy/           configuração antiga, quando houver
+    ├── README.md                guia em inglês
+    ├── docs/README.pt-BR.md      guia em português
+    ├── bin/LER.cmd              comando registrado no PATH
+    ├── scripts/                 instaladores e preload do Solid
+    ├── src/                     código do aplicativo
+    ├── tests/                   testes e fixtures de autoria própria
+    ├── node_modules/            dependências criadas na instalação
+    └── .ler/                    dados locais gerados, ignorados pelo Git
+        ├── libraries/ID/        estado, marcadores, preferências e catálogo
+        ├── cache/               caches dos gerenciadores e transpiler
+        ├── tmp/                 arquivos temporários
+        └── legacy/              configuração antiga do perfil, quando houver
 ```
 
-Essas pastas geradas são ignoradas pelo Git: não vêm preenchidas no clone nem devem ser publicadas. Elas são criadas conforme necessárias. Para fazer backup dos dados de leitura, copie `.ler/` de dentro do LER. Bibliotecas diferentes têm registros separados; mover o LER junto das bibliotecas preserva suas referências relativas.
+Faça backup de `LER/.ler/` para preservar as leituras. Cada diretório de biblioteca contém `state.json`, backup, `library.json` e uma trava enquanto estiver aberto. Os livros são identificados por hash do conteúdo; reabrir os mesmos bytes após renomear pode reconectar o progresso salvo. Os caminhos são relativos à biblioteca/instalação quando aplicável; mover ambas juntas preserva essas referências.
 
-O README principal, a licença, os manifestos e lockfiles de dependências e as configurações de Bun e TypeScript permanecem na raiz. A integração contínua fica em `.github/workflows/`.
+O estado antigo de `.leitor/` é migrado ao abrir sua biblioteca; arquivos desconhecidos são preservados. A configuração antiga do perfil é arquivada em `.ler/legacy/`, quando presente. Os dados de execução ficam dentro do clone; a configuração persistente externa feita pelo instalador é a entrada no PATH do usuário.
 
-Na primeira abertura de uma biblioteca usada pela versão antiga, o LER migra o progresso de `.leitor/` para o novo local. A pasta antiga é removida depois da cópia, se contiver apenas arquivos do aplicativo. Arquivos desconhecidos são preservados. Feche a versão antiga antes de migrar. A configuração antiga em `%APPDATA%/leitor/config.json`, quando existente, também é arquivada dentro do clone.
+Manifestos, os dois lockfiles, `bunfig.toml`, `tsconfig.json`, licença e README principal ficam na raiz. A integração contínua fica em `.github/workflows/`.
 
-Para verificar o código: `bun run typecheck` e `bun test`.
+## Arquitetura
 
-Mantenha os dois lockfiles: `bun.lock` fixa a instalação com Bun e `package-lock.json` permite ao instalador preparar Bun via `npm ci` quando necessário. Use fixtures pequenas e próprias nos testes; não inclua livros pessoais, dados de leitura ou capturas de trechos protegidos nos commits. Ao alterar a interface, confira rolagem, redimensionamento, abas e saída em um terminal real e atualize os textos em português e inglês.
+A interface gerencia a sessão e o salvamento. Os workers retornam entradas do catálogo, resultados de busca textual ou imagens do PDF; não gravam o estado de leitura diretamente.
 
-Use `i` sobre uma imagem para ampliá-la. Busca textual roda em worker cancelável; resultados podem ser selecionados com as setas e Enter. A faixa de abas acompanha o livro ativo, acessível com F6.
+```mermaid
+flowchart LR
+    Livros["Biblioteca: EPUB / TXT / PDF"]
+    CLI["CLI: escolher biblioteca"] --> UI["Interface OpenTUI + Solid"]
+    UI -->|"raiz + catálogo em cache"| Catalogo["Worker do catálogo"]
+    Livros -->|"nomes + metadados EPUB"| Catalogo
+    Catalogo -->|"entradas progressivas"| UI
+    UI -->|"abrir arquivo escolhido"| Abrir["Carregador de livros"]
+    Livros -->|"conteúdo do arquivo"| Abrir
+    Abrir --> EPUB["Parser EPUB"]
+    Abrir --> TXT["Decodificador TXT"]
+    Abrir --> PDF["Controlador + worker PDF"]
+    EPUB -->|"texto / imagens"| UI
+    TXT -->|"texto"| UI
+    PDF -->|"páginas PNG"| UI
+    UI -->|"blocos EPUB / TXT"| Layout["Layout textual + paginação"]
+    Layout -->|"linhas na tela"| UI
+    UI -->|"capítulos EPUB / TXT + consulta"| Busca["Worker de busca textual"]
+    Busca -->|"resultados + âncoras"| UI
+    CLI -->|"carregar estado e obter trava"| Estado["Controlador de armazenamento"]
+    UI -->|"salvar sessão e catálogo"| Estado
+    Estado --> Dados["LER/.ler/libraries/ID/"]
+```
 
-## Aparência e sumário
+### Ciclo da sessão
 
-A home usa uma logo de blocos pixelados, com letras claras e quadrados em azul suave cintilando dentro, entre e ao redor das letras. Um campo de estrelas ocupa a área livre ao fundo, atrás da busca e dos controles. A linha pontilhada acende da esquerda para a direita, como uma fita de LED. Os efeitos pausam durante a busca e quando um painel está aberto; terminais menores usam uma logo compacta estática.
+```mermaid
+sequenceDiagram
+    participant U as Leitor
+    participant C as CLI
+    participant A as Interface do aplicativo
+    participant S as Armazenamento
+    participant B as Carregadores de livros
+    participant W as Worker do catálogo
+    U->>C: Executar LER com pasta opcional
+    C->>S: Carregar estado e bloquear a biblioteca
+    C->>A: Iniciar interface com estado salvo
+    A->>B: Reabrir abas salvas e restaurar posições
+    A-->>U: Home e abas restauradas
+    U->>A: Digitar uma busca na biblioteca
+    A->>W: Varrer a raiz usando catálogo em cache
+    W-->>A: Enviar nomes e metadados EPUB progressivamente
+    A->>S: Salvar catálogo concluído
+    U->>A: Abrir um resultado e ler
+    A->>B: Carregar EPUB, TXT ou PDF
+    A->>S: Salvar posição durante a navegação
+    U->>A: Esc sem painel aberto
+    A->>S: Salvar posição e abas restantes
+    A->>B: Fechar recursos do livro atual
+    A-->>U: Voltar à home
+    U->>A: Ctrl+C
+    A->>C: Salvar e sair
+    C->>S: Salvar estado final e aguardar fila de gravações
+    C->>B: Fechar livros e seus workers
+    C->>S: Liberar trava da biblioteca
+    C->>A: Encerrar renderizador e restaurar terminal
+```
 
-Em **Configurações** (F3), **Efeitos da home** liga ou desliga toda a animação. **Tamanho dos pixels** permite escolher Pequeno, Médio ou Grande para as estrelas e a fita de LED; o tamanho físico depende da fonte e do zoom do terminal. **Quantidade de pixels** ajusta a densidade entre 25% e 200%, em passos de 25%, na logo e no fundo. O padrão é Médio / 100%, com até 240 pontos ao fundo; em 200%, o limite sobe para 480. Use ↑↓ para escolher a opção e ←→ para ajustar. As escolhas ficam salvas por biblioteca, inclusive com os efeitos desligados.
+A inicialização normalmente mostra a home; restaurar as abas não força a exibição do último livro. A ação **Continuar** abre explicitamente a última posição salva.
 
-A aba **Configurações** (F3, opção na home ou `/config`) permite alterar fundo e texto usando cores `#RRGGBB`, largura da coluna, espaçamento, altura das imagens, idioma e protocolo gráfico. Use ↑↓ para selecionar, ←→ para ajustar números e Enter para editar cores. As preferências são aplicadas imediatamente e salvas em `.ler/libraries/<id>/state.json`, dentro do LER.
+## Desenvolvimento
 
-Imagens ocupam até 80% da altura disponível por padrão; ajuste de 30% a 100%. Clique numa imagem ou use `i` quando ela estiver visível para ampliá-la. A proporção original é preservada, portanto uma imagem muito larga pode ficar limitada pela largura da coluna.
+Com Bun instalado, execute na raiz do clone:
 
-O tamanho real da fonte pertence ao terminal. No Windows Terminal, use Ctrl + Mais/Menos ou Ctrl + roda do mouse; essa orientação também aparece nas configurações. [Documentação do Windows Terminal](https://learn.microsoft.com/en-us/windows/terminal/tips-and-tricks).
+```sh
+bun install --frozen-lockfile
+bun run typecheck
+bun test
+bun run start
+```
 
-O sumário (`s`) aceita setas, j/k, Home/End, Enter e clique. Links para seções do mesmo capítulo também são resolvidos.
+Com Bun local no Windows, substitua `bun` por `.\node_modules\.bin\bun.cmd`. A integração contínua verifica tipos e testes no Windows. `bun.lock` fixa a instalação com Bun; `package-lock.json` permite ao instalador preparar o ambiente via `npm ci`. Mantenha ambos. Use fixtures pequenas e próprias; não inclua livros pessoais, estado de leitura ou trechos protegidos nos commits. Alterações gráficas também exigem conferência em terminal real.
 
-## Buscar livros e autores
+## Licença
 
-Na busca central da **home** (F5 ou aba LER), digite parte do nome do arquivo, título ou autor; todas as subpastas são pesquisadas. A pesquisa ignora maiúsculas e acentos e combina as palavras digitadas. Use ↑↓ e Enter ou clique em um resultado para abrir o livro. O caminho aparece abaixo do título para diferenciar cópias; a lista mostra apenas alguns resultados por vez e acompanha a seleção.
-
-Ao digitar a primeira busca, o catálogo é construído em segundo plano lendo apenas os metadados dos EPUBs. Os resultados aparecem conforme os arquivos são encontrados. O índice é salvo junto do progresso; arquivos inalterados não precisam ter os metadados lidos novamente. Use **Ctrl+R** na home ou `/atualizar` após adicionar, mover ou remover livros. Se o EPUB não tiver autor ou estiver inválido, ainda será encontrado pelo nome do arquivo. A busca dentro do livro continua em `/` durante a leitura.
-
-Limitações atuais: sem DRM, layout fixo ou SVG geral; CSS e ênfase simplificados; busca dentro do livro limitada a mil resultados. Alguns erros ainda são bilíngues. A compatibilidade gráfica no Windows Terminal precisa de conferência manual. Consulte o [README em inglês](../README.md) para detalhes.
-
-Uma indicação de criptografia em recursos não utilizados, como fontes embutidas, não impede a leitura. O LER usa a fonte do terminal e não descriptografa recursos; capítulos criptografados continuam sem suporte.
+[MIT](../LICENSE). As dependências mantêm suas próprias licenças.
