@@ -1,0 +1,8 @@
+export type Preferences = { background: string; foreground: string; readingWidth: number; imagePercent: number; lineGap: number; protocol: 'auto' | 'blocks' };
+export const defaults: Preferences = { background: '#101114', foreground: '#d6d6d6', readingWidth: 88, imagePercent: 80, lineGap: 0, protocol: 'auto' };
+export function preferences(value?: Partial<Preferences>): Preferences {
+  const clamp = (n: unknown, fallback: number, min: number, max: number) => typeof n === 'number' && Number.isFinite(n) ? Math.max(min, Math.min(max, Math.round(n))) : fallback;
+  const color = (s: unknown, fallback: string) => typeof s === 'string' && /^#[0-9a-f]{6}$/i.test(s) ? s : fallback;
+  return { background: color(value?.background, defaults.background), foreground: color(value?.foreground, defaults.foreground), readingWidth: clamp(value?.readingWidth, 88, 40, 140), imagePercent: clamp(value?.imagePercent, 80, 30, 100), lineGap: clamp(value?.lineGap, 0, 0, 2), protocol: value?.protocol === 'blocks' ? 'blocks' : 'auto' };
+}
+export function imageRows(viewport: number, percent: number) { return Math.max(1, Math.min(viewport, Math.round(viewport * percent / 100))); }

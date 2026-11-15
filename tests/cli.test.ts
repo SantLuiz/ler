@@ -1,0 +1,23 @@
+import {test,expect} from 'bun:test';
+import {parseArgs,libraryRoot} from '../src/cli';
+import {promises as fs} from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+test('CLI chooses cwd, repo parent or explicit library without a remembered-folder override',()=>{
+ const root=path.resolve('library');const app=path.join(root,'LER');
+ expect(libraryRoot(parseArgs([]),root,app)).toBe(root);
+ expect(libraryRoot(parseArgs([]),app,app)).toBe(root);
+ expect(libraryRoot(parseArgs([]),path.join(app,'src'),app)).toBe(root);
+ expect(libraryRoot(parseArgs(['other folder']),root,app)).toBe(path.join(root,'other folder'));
+ expect(parseArgs(['--choose','--lang','pt-BR']).choose).toBe(true);
+ expect(()=>parseArgs(['--library'])).toThrow();expect(()=>parseArgs(['--lang','fr'])).toThrow();expect(()=>parseArgs(['--unknown'])).toThrow();expect(()=>parseArgs(['first','second'])).toThrow();
+});
+test('entrypoint runs from a different folder with explicit preload and preserves cwd',async()=>{
+ const root=await fs.mkdtemp(path.join(os.tmpdir(),'LER biblioteca com espaços & '));const app=path.resolve(import.meta.dir,'..');
+ try{
+  async function run(args:string[]){const child=Bun.spawn([process.execPath,'--preload',path.join(app,'scripts/preload.ts'),path.join(app,'src/main.tsx'),...args],{cwd:root,stdout:'pipe',stderr:'pipe'});return {code:await child.exited,out:await new Response(child.stdout).text(),err:await new Response(child.stderr).text()};}
+  const checked=await run(['--check']);expect(checked.code).toBe(0);expect(JSON.parse(checked.out).library).toBe(libraryRoot(parseArgs([]),root,app));expect(await fs.readdir(root)).toEqual([]);
+  expect((await run(['--help'])).out).toContain('LER --choose');expect((await run(['--version'])).out.trim()).toBe('LER 0.1.0');expect((await run(['--bogus'])).code).toBe(1);expect((await run(['missing','--check'])).code).toBe(1);
+  const chosen=Bun.spawn([process.execPath,'--preload',path.join(app,'scripts/preload.ts'),path.join(app,'src/main.tsx'),'--choose','--check'],{cwd:app,stdin:'pipe',stdout:'pipe',stderr:'pipe'});chosen.stdin.write(root+'\n');chosen.stdin.end();const output=await new Response(chosen.stdout).text();expect(await chosen.exited).toBe(0);expect(JSON.parse(output.slice(output.indexOf('{'))).library).toBe(root);
+ }finally{await fs.rm(root,{recursive:true,force:true});}
+},15000);
