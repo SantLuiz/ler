@@ -205,7 +205,7 @@ On the home screen, type `/` to use commands:
 
 Open **Settings** with `F3`, the home option or `/settings`. Changes apply immediately and persist with the selected library. The terminal controls font size; in Windows Terminal, use `Ctrl` + `+` / `-` or `Ctrl` + mouse wheel.
 
-The home logo uses terminal pixel blocks with light lettering and many small soft-blue squares twinkling between the letters. The dotted baseline lights up in sequence from left to right, like an LED strip; the letters stay still. The square glyph is approximately 4 pixels at typical terminal font sizes; its actual size depends on the font and zoom. The animation stops during search and while a panel is open, and uses a compact static mark in smaller terminals. Turn **Logo animation** off in Settings for a static logo; the choice is saved per library.
+The home logo uses terminal pixel blocks with light lettering and many small soft-blue squares twinkling inside, between and around the letters. A background starfield covers the free home area, capped at 240 points, behind the search and controls. The dotted baseline lights up in sequence from left to right, like an LED strip. The square glyph is approximately 4 pixels at typical terminal font sizes; its actual size depends on the font and zoom. The effects stop during search and while a panel is open; smaller terminals use a compact static logo. Turn **Logo animation** off in Settings to disable both the logo effects and background stars; the choice is saved per library.
 
 ## Data, backups and privacy
 

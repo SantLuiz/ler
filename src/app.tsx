@@ -8,6 +8,7 @@ import { preferences, imageRows, type Preferences } from './preferences';
 import {searchCatalog,type Catalog,type CatalogEntry} from './catalog';
 import {matchingCommands,folderMatches,type HomeAction} from './home';
 import {HomeLogo} from './components/HomeLogo';
+import {HomeStars} from './components/HomeStars';
 import {KeyHints} from './components/KeyHints';
 import {previousPage} from './pagination';
 import {bookFormat,bookTitle} from './formats';
@@ -162,7 +163,7 @@ export function App(props: { root: string; appDirectory?: string; state: State; 
     const homeWidth=()=>Math.min(76,dimensions().width-12);
     const resultRows=()=>Math.max(1,Math.min(5,Math.floor((dimensions().height-18)/2)));
     const actionLabel=(action:HomeAction)=>({folders:label('Biblioteca','Folders'),continue:label('Continuar','Resume'),settings:label('Aparência','Appearance'),help:label('Ajuda','Help'),refresh:label('Atualizar','Refresh'),quit:label('Sair','Quit')})[action];
-    return <box width={homeWidth()} flexDirection="column" gap={1}>
+    return <box width={homeWidth()} flexDirection="column" gap={1} backgroundColor={prefs().background}>
       <box alignItems="center" flexDirection="column" marginBottom={1}>
         <HomeLogo size={libraryQuery().trim()?'small':dimensions().height>=38&&dimensions().width>=76?'large':dimensions().height>=28&&dimensions().width>=72?'medium':'small'} animate={!panel()&&!libraryQuery().trim()&&prefs().logoAnimation!==false} background={prefs().background}/>
         <text fg="#777777">Leitor Extremamente Reduzido</text>
@@ -181,6 +182,7 @@ export function App(props: { root: string; appDirectory?: string; state: State; 
   function Picture(props: { href: string; height?:number }) { const [bytes] = createResource(() => ({ b:book(),href:props.href }), async value => { try { return await value.b?.resource(value.href); } catch { return undefined; } }); return <Show when={bytes()} fallback={<text fg="#888888">{t('image')}</text>}><image source={bytes()} width={width()} height={props.height??pictureHeight()} fit="fit" protocol={protocol()} onMouseDown={()=>{setSelectedImage(props.href);setPanel('image');}} /></Show>; }
   const visible = createMemo(() => { const output: ReturnType<typeof lines> = []; let count=0; for(const l of lines().slice(line())) { const size=l.image?pictureHeight():textHeight(); if(count+size>height()) break; output.push(l);count+=size; } return output; });
   return <box flexDirection="column" width="100%" height="100%" backgroundColor={prefs().background} paddingLeft={2} paddingRight={2}>
+    <Show when={home()&&prefs().logoAnimation!==false&&dimensions().width>=60&&dimensions().height>=20}><HomeStars width={dimensions().width-4} height={Math.max(1,dimensions().height-footerRows()-2)} background={prefs().background} animate={!panel()&&!libraryQuery().trim()}/></Show>
     <box height={1} flexShrink={0} flexDirection="row" gap={0} backgroundColor="#0c0c0c"><text height={1} width={7} fg={home()?'#eeeeee':'#777777'} bg={home()?'#252525':'#0c0c0c'} onMouseDown={()=>switchTab(-1)}><b>  LER  </b></text><For each={visibleTabs()}>{b=><box flexDirection="row" height={1} backgroundColor={b===book()?'#252525':'#171717'}><text height={1} width={Math.max(10,Math.min(25,dimensions().width-31))} fg={b===book()?'#eeeeee':'#777777'} onMouseDown={()=>switchTab(tabs().indexOf(b))}><b>  {b.title.slice(0,Math.max(6,Math.min(21,dimensions().width-35)))}</b></text><text height={1} width={2} fg="#777777" onMouseDown={()=>closeTab(tabs().indexOf(b))}>× </text></box>}</For><Show when={active()===-2}><text height={1} fg="#eeeeee" bg="#252525">  {language()==='en'?'Settings':'Configurações'}  </text></Show><text height={1} fg="#777777" onMouseDown={()=>{setLibraryQuery('');switchTab(-1);}}>  +  </text></box>
     <Show when={dimensions().width>=60 && dimensions().height>=20} fallback={<text>Resize terminal / Aumente o terminal (60×20)</text>}>
     <box flexGrow={1} flexDirection="column" alignItems="center" justifyContent={home()?'center':'flex-start'} onMouseScroll={e=>{if(book()&&!panel()){if(pdf()){const delta=e.scroll?.direction==='up'?-1:1;if(pdfZoom()>1)setPdfY(Math.max(0,Math.min(1,pdfY()+delta*0.1)));else jump({chapter:chapter()+delta,block:0,offset:0});}else move(e.scroll?.direction==='up'?-3:3);}}}>

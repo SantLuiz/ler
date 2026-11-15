@@ -5,7 +5,7 @@ import {ManualClock} from '@opentui/core/testing';
 import {HomeLogo} from '../src/components/HomeLogo';
 import {App} from '../src/app';
 import {preferences} from '../src/preferences';
-import {logoPixels,pixelColor,logoColors} from '../src/logo';
+import {logoPixels,pixelColor,logoColors,homeStars} from '../src/logo';
 import type {State} from '../src/storage';
 import {promises as fs} from 'node:fs';
 import path from 'node:path';
@@ -38,7 +38,17 @@ test('many square pixels twinkle independently while letters stay still and the 
   expect(leds.every(p=>pixelColor(p,undefined)===logoColors.baseline)).toBe(true);
   expect(pixelColor(stars[0],(55-stars[0].offset!)%48)).toBe(logoColors.accent.toLowerCase());expect(pixelColor(stars[0],undefined,'#202020')).toBe('#202020');
   expect(phases.some(phase=>stars.filter(p=>pixelColor(p,phase)!=='#101114').length>=8)).toBe(true);
+  const inside=pixels.filter(p=>p.kind==='inset');expect(inside.length).toBeGreaterThan(5);
+  expect(inside.every(p=>pixelColor(p,undefined)===logoColors.text.toLowerCase())).toBe(true);
  }
+});
+
+test('home starfield fills free space with bounded, stable and unique positions',()=>{
+ const stars=homeStars(160,50);expect(stars.length).toBeGreaterThan(100);expect(stars.length).toBeLessThanOrEqual(240);
+ expect(stars.every(star=>star.x>0&&star.x<159&&star.y>0&&star.y<49)).toBe(true);
+ expect(new Set(stars.map(star=>`${star.x},${star.y}`)).size).toBe(stars.length);
+ expect(homeStars(160,50)).toEqual(stars);expect(homeStars(500,200)).toHaveLength(240);expect(homeStars(1,1)).toEqual([]);
+ expect(stars.some(star=>star.x<20)&&stars.some(star=>star.x>140)).toBe(true);
 });
 
 test('logo animation preference defaults on and can be disabled through Appearance',async()=>{
@@ -47,9 +57,12 @@ test('logo animation preference defaults on and can be disabled through Appearan
  const state:State={version:1,books:{},tabs:[],lang:'en'};
  try {
   setup=await testRender(()=><App root={root} state={state} opened={[]} exit={async()=>{}}/>,{width:100,height:40});await Bun.sleep(20);await setup.renderOnce();
+  expect(setup.renderer.root.findDescendantById('home-stars')).toBeDefined();
   setup.mockInput.pressKey('F3');await setup.renderOnce();expect(setup.captureCharFrame()).toContain('Logo animation: On');
+  expect(setup.renderer.root.findDescendantById('home-stars')).toBeUndefined();
   for(let i=0;i<7;i++)setup.mockInput.pressArrow('down');setup.mockInput.pressEnter();await setup.renderOnce();
   expect(state.preferences?.logoAnimation).toBe(false);expect(setup.captureCharFrame()).toContain('Logo animation: Off');
   setup.mockInput.pressKey('F5');await setup.renderOnce();expect(setup.renderer.root.findDescendantById('home-logo')).toBeDefined();
+  expect(setup.renderer.root.findDescendantById('home-stars')).toBeUndefined();
  } finally {await setup?.dispose();await fs.rm(root,{recursive:true,force:true});}
 });

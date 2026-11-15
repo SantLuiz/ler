@@ -10,7 +10,7 @@ export function HomeLogo(props:{size:'large'|'medium'|'small'; animate:boolean; 
     <Show when={props.size} keyed>{size=>{
       const rows=logoPixels(size==='large'?'large':'medium');
       return <box id="home-logo" width={rows[0].length*2} height={rows.length} flexShrink={0} flexDirection="column">
-        <For each={rows}>{row=><text height={1} fg={logoColors.text}><For each={row}>{pixel=><span style={{fg:pixelColor(pixel,props.animate?phase():undefined,props.background)}}>{pixel.glyph}</span>}</For></text>}</For>
+        <For each={rows}>{row=><text height={1} fg={logoColors.text}><For each={row}>{pixel=><span style={{fg:pixelColor(pixel,props.animate?phase():undefined,props.background),bg:pixel.kind==='inset'?logoColors.text:undefined}}>{pixel.glyph}</span>}</For></text>}</For>
       </box>;
     }}</Show>
   </Show>;
