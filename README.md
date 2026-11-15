@@ -138,7 +138,7 @@ The home screen footer shows the full absolute library path, wrapping it across 
 2. Press `F5` or choose the LER tab to focus the home search.
 3. Type part of a filename, title or author. Search is case- and accent-insensitive; every typed word must match.
 4. Use `↑` / `↓` or `j` / `k`, then press `Enter` to open a book.
-5. Press `Esc` or `Ctrl+C` to save and quit. The next session can resume the saved position.
+5. Press `Esc` to save your position and close the current book tab, returning to home. Use `Ctrl+C` to save and quit LER. The next session can resume the saved position.
 
 The first non-empty library query builds a metadata catalog in a worker. It reads package metadata rather than every chapter, progressively shows results, and reuses the catalog for unchanged files. Press `Ctrl+R` on the home screen after changing files on disk.
 
@@ -162,7 +162,7 @@ The first non-empty library query builds a metadata catalog in a worker. It read
 | `i` on an image | Open an enlarged image view |
 | `F2` / `Ctrl+P` | Open the command palette |
 | `F12` | Show / hide the diagnostic console |
-| `Esc` | Dismiss the console or current panel |
+| `Esc` | Dismiss the console/panel; otherwise save and close the current book tab |
 | `Ctrl+C` | Save and quit |
 
 Mouse input can select books and tabs and scroll reading content. Menus also support arrow keys and `Enter`.

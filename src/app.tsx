@@ -101,7 +101,7 @@ export function App(props: { root: string; appDirectory?: string; state: State; 
       renderer.requestRender();return;
     }
     if (renderer.console.visible) {e.preventDefault();return;}
-    if (e.name === 'escape') {searchWorker?.terminate();if(panel())setPanel('');else if(home()){setLibraryQuery('');setHomeFocus(0);}return; }
+    if (e.name === 'escape') {e.preventDefault();searchWorker?.terminate();if(panel())setPanel('');else if(book())closeTab(active());else if(home()){setLibraryQuery('');setHomeFocus(0);}return; }
     if (e.name === 'f6') { const order=[-1,...tabs().map((_,i)=>i),-2];switchTab(order[(order.indexOf(active())+(e.shift?-1:1)+order.length)%order.length]); return; }
     if (e.name === 'f3') { switchTab(-2); return; }
     if (e.name === 'f5') { switchTab(-3); return; }
@@ -166,7 +166,7 @@ export function App(props: { root: string; appDirectory?: string; state: State; 
       <Show when={panel()==='color'}><text fg="#eeeeee">{language()==='en'?'Color (#RRGGBB), Enter to apply':'Cor (#RRGGBB), Enter para aplicar'}</text><input focused value={query()} onInput={setQuery} onSubmit={()=>{if(/^#[0-9a-f]{6}$/i.test(query())){updatePrefs({[colorField()]:query()});setPanel('');}else setStatus(language()==='en'?'Use #RRGGBB':'Use #RRGGBB');}}/></Show>
       <Show when={panel()==='image'&&selectedImage()}><Picture href={selectedImage()} height={Math.max(1,dimensions().height-14)}/></Show>
       <Show when={panel()==='search'}><input focused placeholder={t('search')} value={query()} onInput={q=>{setQuery(q);void search(q);}} onSubmit={()=>{const r=results()[selected()]??results()[0];if(r)jump(r.anchor);setPanel('');}}/><For each={results().slice(Math.max(0,selected()-height()+6),Math.max(height()-5,selected()+1))}>{r=><text fg={results()[selected()]===r?'#7bb4ff':'#eeeeee'} onMouseDown={()=>{jump(r.anchor);setPanel('');}}>{r.label}</text>}</For></Show>
-      <Show when={panel()==='help'}><text>{language()==='en'?'↑↓ j/k · PgUp/PgDn ←→ Space\nF6 tabs · F4 close · F2 commands\n/ search · n/N results · s contents\nb bookmark · Shift+B bookmarks · d delete\ni enlarge image · Esc back · Ctrl+C exit':'↑↓ j/k · PgUp/PgDn ←→ Espaço\nF6 abas · F4 fechar · F2 comandos\n/ buscar · n/N resultados · s sumário\nb marcador · Shift+B lista · d remover\ni ampliar imagem · F12 console · Esc voltar · Ctrl+C sair'}</text></Show>
+      <Show when={panel()==='help'}><text>{language()==='en'?'↑↓ j/k · PgUp/PgDn ←→ Space\nF6 tabs · F4 close · F2 commands\n/ search · n/N results · s contents\nb bookmark · Shift+B bookmarks · d delete\ni enlarge image · Esc back · Ctrl+C exit':'↑↓ j/k · PgUp/PgDn ←→ Espaço\nF6 abas · F4 fechar · F2 comandos\n/ buscar · n/N resultados · s sumário\nb marcador · Shift+B lista · d remover\ni ampliar imagem · F12 console · Esc salvar/fechar aba · Ctrl+C sair'}</text></Show>
       <Show when={panel()==='commands'}><For each={[t('language'),t('refresh'),t('protocol'),t('quit')]}>{(item,i)=><text fg={selected()%4===i()?'#7bb4ff':'#eeeeee'}>{item}</text>}</For></Show>
       <Show when={panel()==='toc'||panel()==='marks'}><KeyHints items={[["↑↓",label('navegar','navigate')],["enter",label('abrir','open')]]}/><For each={menu().slice(Math.max(0,selected()-menuRows()+1),Math.max(menuRows(),selected()+1))}>{item=><text height={1} width="100%" fg={menu()[selected()]===item?'#ffffff':'#c4cbd6'} bg={menu()[selected()]===item?'#26446b':'#20232a'} onMouseDown={()=>{jump(item.anchor);setPanel('');}}>{menu()[selected()]===item?'› ':'  '}{item.label}</text>}</For></Show>
     </box></Show>

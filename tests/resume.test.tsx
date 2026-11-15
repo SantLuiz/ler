@@ -16,7 +16,7 @@ test('continue reopens the last book at its saved position after closing the tab
   async function start(){setup=await testRender(()=><App root={root} state={disk!.state} persistence={disk} opened={opened} exit={async()=>{}}/>,{width:100,height:30});await Bun.sleep(25);await setup.renderOnce();}
   async function resume(command:string){await setup!.mockInput.typeText(command);setup!.mockInput.pressEnter();for(let i=0;i<100&&!setup!.captureCharFrame().includes('Saved passage');i++){await Bun.sleep(10);await setup!.renderOnce();}expect(setup!.captureCharFrame()).toContain('Saved passage');expect(setup!.captureCharFrame()).not.toContain('Opening heading');}
   await start();await resume('/continuar');expect(disk.state.tabs).toEqual([id]);
-  setup!.mockInput.pressKey('F4');await setup!.renderOnce();expect(disk.state.tabs).toEqual([]);await resume('/continue');expect(disk.state.tabs).toEqual([id]);
+  setup!.mockInput.pressEscape();await Bun.sleep(50);await setup!.renderOnce();expect(disk.state.tabs).toEqual([]);expect(disk.state.books[id].anchor.block).toBe(2);await resume('/continue');expect(disk.state.tabs).toEqual([id]);
   setup!.mockInput.pressKey('F4');await setup!.renderOnce();await disk.save();await setup!.dispose();setup=undefined;await disk.close();disk=await store(root,path.join(root,'LER'));await start();await resume('/continuar');expect(disk.state.tabs).toEqual([id]);
   setup!.mockInput.pressKey('F5');await setup!.renderOnce();await resume('/continue');expect(disk.state.tabs).toEqual([id]);
  }finally{await setup?.dispose();opened.forEach(book=>book.close());await disk?.close();await fs.rm(root,{recursive:true,force:true});}

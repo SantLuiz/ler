@@ -38,7 +38,7 @@ Para executar sem registrar no PATH: `powershell -NoProfile -ExecutionPolicy Byp
 
 O LER inicia na home e restaura seus livros nas abas. A busca central aceita nomes de livros/autores ou comandos: `/biblioteca`, `/config`, `/continuar`, `/ajuda`, `/atualizar` e `/sair`. Os equivalentes em inglês também funcionam. Uma busca vazia não lista livros. Use Tab para acessar Biblioteca, Aparência e Ajuda; Continuar aparece quando existe uma leitura salva e reabre o livro na posição guardada, mesmo se a aba foi fechada ou o programa reiniciado. As legendas destacam a tecla e mostram apenas as ações relevantes para a tela atual.
 
-Use as setas ou j/k durante a leitura para rolar uma linha; Page Up/Down, ←/→ e Espaço avançam telas. F6 alterna abas, F4 fecha o livro, F5 retorna à home, `/` busca no livro, `s` abre o sumário, `b` alterna um marcador e Shift+B abre a lista. F2 ou Ctrl+P abre comandos. Esc fecha painéis ou limpa a busca da home; Ctrl+C salva e sai.
+Use as setas ou j/k durante a leitura para rolar uma linha; Page Up/Down, ←/→ e Espaço avançam telas. F6 alterna abas, F4 fecha o livro, F5 retorna à home, `/` busca no livro, `s` abre o sumário, `b` alterna um marcador e Shift+B abre a lista. F2 ou Ctrl+P abre comandos. Durante a leitura, Esc salva a posição e fecha a aba atual, voltando à home. Se houver painel ou console aberto, o primeiro Esc fecha apenas esse painel; na home, limpa a busca. Ctrl+C salva e sai do LER.
 
 O botão **Biblioteca** abaixo da busca abre um popup com a estrutura de pastas e filtro por nome. Use ↑↓ e Enter para abrir pastas e livros; Backspace com filtro vazio volta à pasta anterior.
 
