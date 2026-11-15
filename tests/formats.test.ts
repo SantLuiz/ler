@@ -3,10 +3,10 @@ import {promises as fs} from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {decode} from 'fast-png';
-import {openBook,layout} from '../src/book';
-import {indexLibrary,type Catalog} from '../src/catalog';
-import {decodeText} from '../src/text';
-import {pageViewport,adjacentBand} from '../src/components/PdfPage';
+import {openBook,layout} from '../src/readers/book';
+import {indexLibrary,type Catalog} from '../src/library/catalog';
+import {decodeText} from '../src/readers/text';
+import {pageViewport,adjacentBand} from '../src/ui/components/PdfPage';
 import {pdfFixture} from './fixtures';
 
 test('TXT decodes accents and BOMs without interpreting markup or terminal controls',async()=>{

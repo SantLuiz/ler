@@ -2,15 +2,24 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {constants} from 'node:fs';
-import type { Anchor } from './book';
+import type { Anchor } from '../readers/book';
 import type { Preferences } from './preferences';
-import type { Catalog } from './catalog';
-export type Saved = { file: string; anchor: Anchor; bookmarks: { anchor: Anchor; excerpt: string; date: string }[] };
+import type { Catalog } from '../library/catalog';
+import type {Highlight} from '../reading/highlights';
+import type {ReadingStats} from './statistics';
+export type Saved = { file: string; title?:string; anchor: Anchor; bookmarks: { anchor: Anchor; excerpt: string; date: string }[]; highlights?:Highlight[]; reading?:ReadingStats };
 export type State = { version: 1; books: Record<string, Saved>; tabs: string[]; active?: string; lastRead?: string; lang: 'en' | 'pt-BR'; preferences?: Preferences; catalog?: Catalog };
-export function storageDirectory(root:string,appDirectory=path.resolve(import.meta.dir,'..')) {
+export function storageDirectory(root:string,appDirectory=path.resolve(import.meta.dir,'../..')) {
   const relative=path.relative(path.resolve(appDirectory),path.resolve(root))||'.';
   const identity=process.platform==='win32'?relative.toLowerCase():relative;
   return path.join(appDirectory,'.ler','libraries',createHash('sha256').update(identity).digest('hex'));
+}
+export async function knownLibraryRoot(file:string,appDirectory:string) {
+  const directory=path.join(appDirectory,'.ler','libraries');let entries;
+  try{entries=await fs.readdir(directory,{withFileTypes:true});}catch(error:any){if(error.code==='ENOENT')return;throw error;}
+  const roots:string[]=[];
+  for(const entry of entries){if(!entry.isDirectory())continue;try{const value=JSON.parse(await fs.readFile(path.join(directory,entry.name,'library.json'),'utf8'));if(typeof value.relativeToApp!=='string')continue;const root=path.resolve(appDirectory,value.relativeToApp);const relative=path.relative(root,file);if(relative&&!relative.startsWith('..'+path.sep)&&relative!=='..'&&!path.isAbsolute(relative))roots.push(root);}catch{}}
+  return roots.sort((a,b)=>b.length-a.length)[0];
 }
 async function exists(file:string){try{await fs.access(file);return true;}catch(e:any){if(e.code==='ENOENT')return false;throw e;}}
 export async function migrateLegacyConfig(sourceDirectory:string,appDirectory:string) {
@@ -40,7 +49,7 @@ async function migrateLegacy(root:string,dir:string) {
   try{await fs.rmdir(source);}catch(e:any){if(e.code!=='ENOTEMPTY'&&e.code!=='EEXIST')throw e;}
   await fs.unlink(pending);
 }
-export async function store(root: string,appDirectory=path.resolve(import.meta.dir,'..')) {
+export async function store(root: string,appDirectory=path.resolve(import.meta.dir,'../..')) {
   const dir = storageDirectory(root,appDirectory); await fs.mkdir(dir, { recursive: true });
   const lock = path.join(dir, 'lock');
   try { const handle = await fs.open(lock, 'wx'); await handle.writeFile(String(process.pid)); await handle.close(); }

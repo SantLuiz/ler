@@ -1,9 +1,9 @@
 import {test,expect} from 'bun:test';
 import {testRender} from '@opentui/solid';
 import {ImageRenderable} from '@opentui/core';
-import {App} from '../src/app';
-import {openBook,type Book} from '../src/book';
-import {store} from '../src/storage';
+import {App} from '../src/ui/App';
+import {openBook,type Book} from '../src/readers/book';
+import {store} from '../src/state/storage';
 import {pdfFixture} from './fixtures';
 import {promises as fs} from 'node:fs';
 import path from 'node:path';
@@ -20,7 +20,7 @@ test('TXT search and PDF images, page navigation, zoom, bookmarks and Esc resume
   setup=await testRender(()=><App root={root} state={disk!.state} persistence={disk} opened={opened} exit={async()=>{}}/>,{width:100,height:30});
   for(let i=0;i<200&&opened.length<2;i++){await Bun.sleep(10);await setup.renderOnce();}await Bun.sleep(20);
   expect(opened.length).toBe(2);setup.mockInput.pressKey('F6');await setup.renderOnce();expect(setup.captureCharFrame()).toContain('Primeira anotação');
-  setup.mockInput.pressKey('/');await setup.renderOnce();await setup.mockInput.typeText('Trecho encontrado');
+  setup.mockInput.pressKey('/');await setup.renderOnce();await setup.mockInput.typeText('search');setup.mockInput.pressEnter();await setup.renderOnce();await setup.mockInput.typeText('Trecho encontrado');
   for(let i=0;i<100&&!setup.captureCharFrame().includes('1 · Trecho encontrado');i++){await Bun.sleep(10);await setup.renderOnce();}
   setup.mockInput.pressEnter();await setup.renderOnce();setup.mockInput.pressKey('b');setup.mockInput.pressEscape();await Bun.sleep(50);await setup.renderOnce();
   expect(disk.state.books[ids[0]].anchor.block).toBe(2);expect(disk.state.books[ids[0]].bookmarks.length).toBe(1);
@@ -39,7 +39,7 @@ test('TXT search and PDF images, page navigation, zoom, bookmarks and Esc resume
   setup.mockInput.pressKey('\x1b[5~');await setup.renderOnce();image=await imageWithWidth(720);expect(setup.captureCharFrame()).toContain('1/2 · PDF · 150% · band 2/2');expect(image.crop!.top).toBe(320);
   setup.mockInput.pressKey('0');await setup.renderOnce();expect(image.crop).toBeUndefined();
   setup.mockInput.pressKey('\x1b[6~');await setup.renderOnce();image=await imageWithWidth(960);expect(setup.captureCharFrame()).toContain('2/2 · PDF');
-  setup.mockInput.pressKey('/');await setup.renderOnce();expect(setup.captureCharFrame()).toContain('text search is unavailable');
+  setup.mockInput.pressKey('/');await setup.renderOnce();await setup.mockInput.typeText('search');setup.mockInput.pressEnter();await setup.renderOnce();expect(setup.captureCharFrame()).toContain('text search is unavailable');setup.mockInput.pressEscape();await Bun.sleep(50);await setup.renderOnce();
   setup.mockInput.pressKey('b');setup.mockInput.pressEscape();await Bun.sleep(50);await setup.renderOnce();expect(disk.state.books[ids[1]].anchor.chapter).toBe(1);expect(disk.state.books[ids[1]].bookmarks.length).toBe(1);
   await setup.mockInput.typeText('/continue');setup.mockInput.pressEnter();await imageWithWidth(960);expect(setup.captureCharFrame()).toContain('2/2 · PDF');
   await disk.save();await setup.dispose();setup=undefined;await disk.close();disk=await store(root,path.join(root,'LER'));expect(disk.state.books[ids[1]].anchor.chapter).toBe(1);expect(disk.state.books[ids[0]].anchor.block).toBe(2);

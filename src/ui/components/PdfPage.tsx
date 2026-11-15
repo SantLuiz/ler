@@ -1,7 +1,7 @@
 import {createResource, createMemo, createEffect, Show} from 'solid-js';
 import {useRenderer} from '@opentui/solid';
 import {imageInfo} from '@opentui/core';
-import type {Book} from '../book';
+import type {Book} from '../../readers/book';
 
 export type PdfViewport = {width:number; height:number; crop?:{left:number;top:number;width:number;height:number}; band:number; bands:number; step:number; horizontal:boolean};
 

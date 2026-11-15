@@ -110,7 +110,7 @@ export function layout(book: Book, width: number, chapter: number): Line[] {
   book.chapters[chapter].blocks.forEach((block, b) => {
     if (block.image) { lines.push({ text: block.text, image: block.image, anchor: { chapter, block: b, offset: 0 } }); return; }
     let value = ''; let start = 0; let cells = 0;
-    for (const { segment, index } of segmenter.segment(block.text)) {
+    for (const { segment } of segmenter.segment(block.text)) {
       const size = Bun.stringWidth(segment);
       if (cells + size > width && value) { const space=value.lastIndexOf(' '); const cut=space>0?space+1:value.length;lines.push({ text: value.slice(0,cut), anchor: { chapter, block: b, offset: start } }); value = value.slice(cut);start+=cut;cells=Bun.stringWidth(value); }
       value += segment; cells += size;

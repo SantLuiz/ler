@@ -2,7 +2,7 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import * as yauzl from 'yauzl';
 import { parseDocument } from 'htmlparser2';
-import {bookFormat, bookTitle} from './formats';
+import {bookFormat, bookTitle} from '../readers/formats';
 export type CatalogEntry = { file: string; title: string; authors: string[]; size: number; modified: number; error?: boolean };
 export type Catalog = Record<string, CatalogEntry>;
 const nodes = (n:any, tag:string):any[] => [...(n.name?.split(':').pop()===tag?[n]:[]),...(n.children??[]).flatMap((child:any)=>nodes(child,tag))];

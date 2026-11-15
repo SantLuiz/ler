@@ -1,8 +1,8 @@
 import {test,expect} from 'bun:test';
 import {testRender} from '@opentui/solid';
-import {App} from '../src/app';
-import {openBook,type Book} from '../src/book';
-import {store} from '../src/storage';
+import {App} from '../src/ui/App';
+import {openBook,type Book} from '../src/readers/book';
+import {store} from '../src/state/storage';
 import {zip} from './fixtures';
 import {promises as fs} from 'node:fs';
 import path from 'node:path';

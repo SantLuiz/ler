@@ -1,16 +1,18 @@
 [CmdletBinding()]
-param([switch]$NoPath, [switch]$SkipDependencies, [switch]$Uninstall)
+param([switch]$NoPath, [switch]$NoContextMenu, [switch]$SkipDependencies, [switch]$Uninstall)
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path -Parent $PSScriptRoot
 $bin = Join-Path $repo 'bin'
+. (Join-Path $PSScriptRoot 'context-menu.ps1')
 function Get-PathParts([string]$value) { @($value -split ';' | Where-Object { $_ -and $_.TrimEnd('\') -ine $bin.TrimEnd('\') }) }
 if ($Uninstall) {
+    if (-not $NoContextMenu) { Set-LerContextMenu $repo $true }
     if (-not $NoPath) {
         $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
         [Environment]::SetEnvironmentVariable('Path', ((Get-PathParts $userPath) -join ';'), 'User')
         $env:Path = (Get-PathParts $env:Path) -join ';'
     }
-    Write-Host 'LER removido do PATH. Livros, progresso e repositorio foram preservados.'
+    Write-Host 'Integracoes do LER removidas. Livros, progresso e repositorio foram preservados.'
     exit 0
 }
 $localBun = Join-Path $repo 'node_modules\bun\bin\bun.exe'
@@ -51,5 +53,6 @@ if (-not $NoPath) {
     $env:Path = (@(Get-PathParts $env:Path) + @($bin)) -join ';'
 }
 Write-Host 'LER instalado. Na pasta da biblioteca, execute: LER'
+if (-not $NoContextMenu) { Set-LerContextMenu $repo; Write-Host 'Menu Abrir com LER registrado para EPUB, PDF e TXT (usuario atual).' }
 Write-Host 'Outra pasta: LER "D:\Livros"    Escolher pasta: LER --choose'
 if (-not $NoPath) { Write-Host 'O PATH do usuario foi atualizado. Reabra o terminal se o comando nao for encontrado.' }

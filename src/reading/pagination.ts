@@ -1,4 +1,4 @@
-import type {Line} from './book';
+import type {Line} from '../readers/book';
 /** Fit the preceding page while retaining the current first line as context. */
 export function previousPage(lines:Line[],start:number,height:number,textRows:number,imageRows:number) {
   const cost=(line:Line)=>line.image?imageRows:textRows;

@@ -1,6 +1,6 @@
 import {test,expect} from 'bun:test';
-import {preferences,imageRows} from '../src/preferences';
-import {blocksFromHtml,tocAnchor,resolveLink,type Book} from '../src/book';
+import {preferences,imageRows} from '../src/state/preferences';
+import {blocksFromHtml,tocAnchor,resolveLink,type Book} from '../src/readers/book';
 test('old state receives defaults and invalid appearance values are bounded',()=>{
  expect(preferences().imagePercent).toBe(80);expect(imageRows(30,80)).toBe(24);expect(imageRows(4,100)).toBe(4);
  expect(preferences({background:'bad',readingWidth:999,lineGap:-2,imagePercent:NaN})).toMatchObject({background:'#101114',readingWidth:140,lineGap:0,imagePercent:80});

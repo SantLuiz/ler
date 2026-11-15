@@ -1,6 +1,6 @@
 import { test, expect } from 'bun:test';
-import { blocksFromHtml, resolveHref, layout, openBook } from '../src/book';
-import { store } from '../src/storage';
+import { blocksFromHtml, resolveHref, layout, openBook } from '../src/readers/book';
+import { store } from '../src/state/storage';
 import { promises as fs } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';

@@ -1,5 +1,5 @@
 import { test, expect } from 'bun:test';
-import { openBook } from '../src/book';
+import { openBook } from '../src/readers/book';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';

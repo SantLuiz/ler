@@ -1,5 +1,5 @@
 import {test,expect} from 'bun:test';
-import {store,storageDirectory,migrateLegacyConfig,type State} from '../src/storage';
+import {store,storageDirectory,migrateLegacyConfig,type State} from '../src/state/storage';
 import {promises as fs} from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';

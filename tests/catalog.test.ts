@@ -1,5 +1,5 @@
 import {test,expect} from 'bun:test';
-import {indexLibrary,epubMetadata,searchCatalog,type Catalog} from '../src/catalog';
+import {indexLibrary,epubMetadata,searchCatalog,type Catalog} from '../src/library/catalog';
 import {zip} from './fixtures';
 import {promises as fs} from 'node:fs';
 import path from 'node:path';
