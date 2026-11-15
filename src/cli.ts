@@ -31,7 +31,7 @@ export const HELP=`LER — Leitor Extremamente Reduzido
 
   LER                       Abrir a pasta atual / Open current folder
   LER "D:\\Livros"            Abrir outra biblioteca / Open another library
-  LER --choose              Escolher pasta / Choose a folder
+  LER --choose              Abrir a home / Open home (compatibilidade / compatibility)
   LER --open "livro.epub"    Abrir um arquivo / Open a book file
 
   --library <folder>        Pasta da biblioteca / Library directory

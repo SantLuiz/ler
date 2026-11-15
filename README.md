@@ -4,6 +4,8 @@ A **terminal reader for EPUB, TXT and PDF**, designed primarily for the keyboard
 
 [Português (Brasil)](docs/README.pt-BR.md) · [Commands](docs/commands.md)
 
+[Project website](https://santluiz.github.io/ler/) · [Download Windows installer](https://github.com/SantLuiz/ler/releases/latest) · [Publishing guide](docs/publishing.pt-BR.md)
+
 ## What it does
 
 - Folder-based library with filename search and EPUB title/author search.
@@ -14,6 +16,10 @@ A **terminal reader for EPUB, TXT and PDF**, designed primarily for the keyboard
 - **Abrir com LER** in File Explorer and a Portuguese or English interface.
 
 ## First installation on Windows
+
+For end users, `LER-<version>-Setup-x64.exe` provides a graphical installation wizard and native uninstaller. It includes a private runtime and production dependencies, works offline, and installs only LER. No Git, Node.js, npm, global Bun or administrator access is required. The default folder is `%LOCALAPPDATA%\Programs\LER`; the wizard lets you choose the folder, shortcuts, terminal command and Explorer menu. Windows **Installed apps > LER > Uninstall** removes the app and its reading data after confirmation, preserving external books. See the [installer guide](scripts/release-readme.md). Build with `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-release.ps1 -DownloadCompiler`; only the build machine uses the portable Inno Setup compiler. Output is in `dist/`.
+
+The following installation from source is intended for contributors:
 
 Install **Git** and either **Bun 1.4.4 or newer** or **Node.js with npm**. If Bun is missing, the installer prepares a local copy. Installation needs internet access; reading works offline afterward.
 

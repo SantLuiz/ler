@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build:site": "bun scripts/build-site.ts",
     "start": "bun src/main.tsx",
     "test": "bun test",
     "typecheck": "tsc --noEmit",

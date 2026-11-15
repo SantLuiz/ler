@@ -4,7 +4,6 @@ import {render} from '@opentui/solid';
 import {promises as fs} from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
-import {createInterface} from 'node:readline/promises';
 import type {Book} from './readers/book';
 import {store,storageDirectory,knownLibraryRoot,migrateLegacyConfig,type State} from './state/storage';
 import {parseArgs,libraryRoot,HELP,VERSION} from './cli';
@@ -20,7 +19,6 @@ async function main() {
   if(initialFile&&(!bookFormat(initialFile)||!(await fs.stat(initialFile)).isFile()))throw new Error('Arquivo inválido: use EPUB, TXT ou PDF / Invalid book file');
   let root=libraryRoot(options,process.cwd(),appDirectory);
   if(initialFile&&!options.library&&!options.choose)root=await knownLibraryRoot(initialFile,appDirectory)??root;
-  if(options.choose){const rl=createInterface({input:process.stdin,output:process.stdout});try{const answer=(await rl.question(`Biblioteca / Library [${root}]: `)).trim();if(answer)root=path.resolve(answer.replace(/^"(.*)"$/,'$1'));}finally{rl.close();}}
   if(!(await fs.stat(root)).isDirectory())throw new Error(`Not a directory / Não é uma pasta: ${root}`);
   if(options.check){console.log(JSON.stringify({name:'LER',version:VERSION,library:root,runtime:Bun.version,...(initialFile?{file:initialFile}:{})}));return;}
   let persistence:Awaited<ReturnType<typeof store>>|undefined;let warning='';

@@ -106,5 +106,5 @@ if (-not $NoPath) {
 Write-Host 'LER instalado. Na pasta da biblioteca, execute: LER'
 if (-not $Development) { Write-Host 'Instalacao de uso: ferramentas de desenvolvimento omitidas. Para desenvolver: scripts\install.cmd -Development' }
 if (-not $NoContextMenu) { Set-LerContextMenu $repo; Write-Host 'Menu Abrir com LER registrado para EPUB, PDF e TXT (usuario atual).' }
-Write-Host 'Outra pasta: LER "D:\Livros"    Escolher pasta: LER --choose'
+Write-Host 'Outra pasta: LER "D:\Livros"    Escolher biblioteca na home: Ctrl+L'
 if (-not $NoPath) { Write-Host 'O PATH do usuario foi atualizado. Reabra o terminal se o comando nao for encontrado.' }

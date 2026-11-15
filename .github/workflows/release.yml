@@ -1,0 +1,67 @@
+name: Publish Windows release
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing version tag, e.g. v1.1.0'
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    env:
+      RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+      - name: Validate version tag
+        shell: pwsh
+        run: |
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          if ($env:RELEASE_TAG -cne "v$version") { throw 'Tag must match package.json version.' }
+          git show-ref --verify "refs/tags/$env:RELEASE_TAG"
+          if ($LASTEXITCODE -ne 0) { throw 'Release tag must exist.' }
+      - run: bun install --frozen-lockfile
+      - run: bun run check
+      - name: Build installer
+        shell: powershell
+        run: .\scripts\build-release.ps1 -DownloadCompiler
+      - name: Validate installation and removal with separate AppId
+        shell: powershell
+        run: |
+          .\scripts\build-release.ps1 -ValidationBuild
+          .\scripts\test-installer.ps1
+      - name: Prepare release notes
+        shell: pwsh
+        run: |
+          Copy-Item scripts/release-readme.md dist/release-notes.md
+      - name: Create draft and upload verified assets
+        shell: pwsh
+        run: |
+          gh release view $env:RELEASE_TAG --json isDraft > $null 2>&1
+          if ($LASTEXITCODE -ne 0) {
+            gh release create $env:RELEASE_TAG --verify-tag --draft --title "LER $env:RELEASE_TAG" --notes-file dist/release-notes.md
+            if ($LASTEXITCODE -ne 0) { throw 'Could not create draft release.' }
+          }
+          $draft = gh release view $env:RELEASE_TAG --json isDraft | ConvertFrom-Json
+          if (-not $draft.isDraft) { throw 'Release is already public; published assets will not be overwritten.' }
+          $assets = Get-ChildItem dist/*-Setup-x64.exe, dist/*-Setup-x64.exe.sha256
+          if ($assets.Count -ne 2) { throw 'Expected one production installer and one checksum.' }
+          gh release upload $env:RELEASE_TAG @($assets.FullName) --clobber
+          if ($LASTEXITCODE -ne 0) { throw 'Could not upload release assets.' }
+          gh release edit $env:RELEASE_TAG --draft=false --latest
+          if ($LASTEXITCODE -ne 0) { throw 'Could not publish release.' }

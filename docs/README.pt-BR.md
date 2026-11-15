@@ -4,6 +4,8 @@ Um leitor de **EPUB, TXT e PDF no terminal**, feito para usar principalmente com
 
 [English](../README.md) · [Comandos](commands.pt-BR.md)
 
+[Página do projeto](https://santluiz.github.io/ler/) · [Baixar instalador para Windows](https://github.com/SantLuiz/ler/releases/latest) · [Guia de publicação](publishing.pt-BR.md)
+
 ## O que ele faz
 
 - Biblioteca por pastas, com busca por nome e, em EPUB, título e autor.
@@ -14,6 +16,12 @@ Um leitor de **EPUB, TXT e PDF no terminal**, feito para usar principalmente com
 - Menu **Abrir com LER** no Explorador de Arquivos e interface em português ou inglês.
 
 ## Primeira instalação no Windows
+
+Para uso normal, abra `LER-<versão>-Setup-x64.exe` e siga o assistente gráfico. Ele inclui tudo o que o leitor precisa, funciona offline e instala apenas o LER. Não exige Git, Node.js, npm, Bun global ou administrador. A pasta padrão é `%LOCALAPPDATA%\Programs\LER`; o assistente permite escolher outra pasta e selecionar atalhos, comando no terminal e menu do Explorador. Runtime e dependências são componentes privados da aplicação.
+
+Para remover, use **Aplicativos instalados > LER > Desinstalar** no Windows ou `unins000.exe` na pasta instalada. O desinstalador gráfico remove o aplicativo, seus componentes privados e todos os dados de leitura após confirmação; livros externos são preservados. Veja o [guia do instalador](../scripts/release-readme.md).
+
+Para gerar o instalador neste projeto, execute `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-release.ps1 -DownloadCompiler`. Apenas a máquina de build usa o compilador Inno Setup portátil, guardado dentro do projeto. O `.exe` fica em `dist/`. As instruções abaixo são para instalação pelo código-fonte:
 
 Você precisa de **Git** e de uma destas opções: **Bun 1.4.4 ou superior**, ou **Node.js com npm**. Se não houver Bun, o instalador prepara uma cópia local dele. A instalação precisa de internet; a leitura funciona offline.
 

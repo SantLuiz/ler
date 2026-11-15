@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101114">
+  <meta name="description" content="LER: Leitor Extremamente Reduzido. Leia EPUB, TXT e PDF no terminal, com biblioteca local, destaques e progresso salvo. Baixe para Windows ou clone o projeto.">
+  <title>LER — Leitor Extremamente Reduzido</title>
+  <link rel="icon" href="assets/ler.png">
+  <link rel="stylesheet" href="style.css">
+  <script src="main.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#conteudo">Pular para o conteúdo</a>
+  <header class="shell header">
+    <a class="wordmark" href="#" aria-label="LER, início">LER<span> ▪</span></a>
+    <nav aria-label="Navegação principal"><a href="#projeto">O projeto</a><a href="#instalar">Instalar</a><a href="#usar">Como usar</a><a href="https://github.com/SantLuiz/ler">GitHub ↗</a></nav>
+  </header>
+  <main id="conteudo">
+    <section class="hero shell">
+      <div class="eyebrow"><span class="light"></span> EPUB · TXT · PDF / NO SEU TERMINAL</div>
+      <img class="pixel-logo" src="assets/logo.svg" alt="LER" width="580" height="200">
+      <p class="subtitle">Leitor Extremamente Reduzido</p>
+      <h1>Menos interface.<br>Mais uma página.</h1>
+      <p class="intro">Seus livros, seu teclado e um lugar tranquilo para ler.<br class="desktop"> Uma biblioteca local que guarda onde você parou.</p>
+      <div class="actions"><a class="button primary" data-download href="https://github.com/SantLuiz/ler/releases/latest">↓ Baixar para Windows</a><a class="button" href="#codigo">&lt;/&gt; Clonar repositório</a></div>
+      <p class="fine" id="release-info" aria-live="polite">Windows x64 · Instalador gráfico · Licença MIT</p>
+      <a class="quiet-link" href="https://github.com/SantLuiz/ler/releases">Todas as versões e checksums ↗</a>
+      <div class="terminal" aria-label="Demonstração ilustrativa da interface do LER">
+        <div class="terminal-bar"><span>LER / biblioteca</span><span>EPUB · TXT · PDF</span></div>
+        <div class="terminal-body"><div class="terminal-path">~/Documentos/Biblioteca <span>Ctrl+L</span></div><div class="search">&gt; <span>Buscar um livro, título ou autor</span><span class="cursor">▌</span></div><div class="book selected"><span>› Dom Casmurro</span><span>Machado de Assis · EPUB</span></div><div class="book"><span>  Poemas escolhidos</span><span>TXT</span></div><div class="book"><span>  Caderno de estudos</span><span>PDF</span></div><div class="terminal-help">Enter abrir <span>Tab opções</span><span>Ctrl+L biblioteca</span></div></div>
+      </div>
+      <p class="caption">Uma ilustração da biblioteca. Seus arquivos ficam no seu computador.</p>
+    </section>
+    <section id="projeto" class="shell section">
+      <div class="section-title"><span class="index">01 / O PROJETO</span><h2>O essencial para continuar lendo.</h2></div>
+      <div class="features"><article><span class="symbol">[ local ]</span><h3>Sua biblioteca é uma pasta.</h3><p>Abra seus EPUBs, TXTs e PDFs, busque por nome e organize tudo em subpastas. Sem conta, envio de livros ou telemetria.</p></article><article><span class="symbol">[ retomar ]</span><h3>Um livro pode esperar o outro.</h3><p>Alterne entre abas, marque páginas e retome do ponto salvo. Nos EPUBs e TXTs, selecione trechos e guarde destaques.</p></article><article><span class="symbol">[ ao seu ritmo ]</span><h3>Teclado à mão. Tempo à vista.</h3><p>Navegue com atalhos, acompanhe estatísticas e estimativas de leitura. Escolha sua paleta e leia em português ou inglês.</p></article></div>
+    </section>
+    <section id="instalar" class="shell section install">
+      <div class="section-title"><span class="index">02 / INSTALAR</span><h2>Do download à primeira leitura.</h2><p>O instalador inclui o runtime e as dependências. Você não precisa instalar Git, Node.js ou Bun para usar o LER.</p><a class="button primary" data-download href="https://github.com/SantLuiz/ler/releases/latest">↓ Baixar instalador · Windows x64</a></div>
+      <ol class="steps"><li><h3>Baixe e abra o instalador.</h3><p>Escolha o arquivo <code>LER-…-Setup-x64.exe</code> no GitHub Releases e siga o assistente. A instalação funciona offline e não exige administrador.</p></li><li><h3>Escolha onde instalar.</h3><p>Selecione a pasta e as integrações: atalhos, comando <code>LER</code> no terminal e “Abrir com LER” no Explorador. Guarde seus livros fora da pasta do aplicativo.</p></li><li><h3>Abra o LER e escolha seus livros.</h3><p>Use o menu Iniciar ou um atalho. Na tela inicial, pressione <kbd>Ctrl</kbd> + <kbd>L</kbd> para selecionar sua biblioteca; confirme com “Usar esta pasta”.</p></li></ol>
+    </section>
+    <section id="usar" class="shell section">
+      <div class="section-title"><span class="index">03 / COMO USAR</span><h2>Encontre. Abra. Continue.</h2><p>Na biblioteca, digite um nome e pressione <kbd>Enter</kbd>. Durante a leitura, estes atalhos dão conta do começo.</p></div>
+      <div class="shortcut-grid"><div><kbd>↑ ↓</kbd><kbd>PgUp / PgDn</kbd><span>Navegar pela leitura</span></div><div><kbd>F6</kbd><span>Alternar entre livros abertos</span></div><div><kbd>b</kbd><span>Marcar a posição atual</span></div><div><kbd>v</kbd><kbd>Shift + setas</kbd><span>Selecionar texto em EPUB / TXT</span></div><div><kbd>Ctrl + S</kbd><span>Salvar a seleção como destaque</span></div><div><kbd>F7</kbd><kbd>F8</kbd><span>Abrir destaques / estatísticas</span></div><div><kbd>+ − 0</kbd><span>Zoom e ajuste de página no PDF</span></div><div><kbd>/</kbd><kbd>F2</kbd><span>Abrir a lista de comandos</span></div></div>
+      <p class="tip">Aparência e paletas em <kbd>F3</kbd>. Para trocar de biblioteca, use <kbd>Ctrl + L</kbd> na home. Para salvar e sair, <kbd>Ctrl + C</kbd>.</p><a class="quiet-link" href="https://github.com/SantLuiz/ler/blob/main/docs/commands.pt-BR.md">Consultar todos os comandos ↗</a>
+    </section>
+    <section id="codigo" class="shell section source">
+      <div class="section-title"><span class="index">04 / CÓDIGO ABERTO</span><h2>Prefere abrir o código?</h2><p>Clone o repositório para explorar, adaptar ou contribuir. Para instalar pelo código-fonte no Windows, tenha Git e Bun 1.4.4+ ou Node.js com npm.</p></div>
+      <div class="code-box"><div class="code-heading"><span>PowerShell</span><button id="copy" type="button" hidden>Copiar comandos</button></div><pre><code id="clone-command">git clone https://github.com/SantLuiz/ler.git
+cd ler
+.\scripts\install.cmd</code></pre><p id="copy-status" class="fine" role="status"></p></div>
+      <div class="source-links"><a class="quiet-link" href="https://github.com/SantLuiz/ler">Explorar repositório ↗</a><a class="quiet-link" href="https://github.com/SantLuiz/ler/blob/main/docs/development.md">Guia de desenvolvimento ↗</a><a class="quiet-link" href="https://github.com/SantLuiz/ler/issues">Relatar um problema ↗</a></div>
+    </section>
+    <section class="shell section notes"><span class="index">ANTES DE COMEÇAR</span><div><h3>Atualizar sem perder a leitura</h3><p>Feche o LER e execute o novo instalador na mesma pasta. Seus dados em <code>.ler</code> são preservados na atualização. Faça backup dessa pasta para guardar progresso e destaques.</p></div><div><h3>Formatos e limites</h3><p>EPUB e TXT têm texto fluido. PDFs são exibidos como imagens, sem busca textual, seleção ou OCR. DRM, senhas e EPUBs de layout fixo não são suportados. Use um terminal com pelo menos 60 colunas e 20 linhas.</p></div></section>
+  </main>
+  <footer class="shell"><a class="wordmark" href="#">LER<span> ▪</span></a><p>Leitor Extremamente Reduzido.<br>Um projeto aberto para ler no seu ritmo.</p><a href="https://github.com/SantLuiz/ler/blob/main/LICENSE">Licença MIT ↗</a></footer>
+</body>
+</html>

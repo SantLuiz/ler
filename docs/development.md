@@ -22,6 +22,8 @@ docs/                Portuguese README and command reference
 
 All runtime data stays in `.ler/` inside the installation. Library state, highlights and preferences are under `.ler/libraries/`; caches and temporary files are separate. The global tab manifest is `.ler/workspace.json`; its file and library paths are relative to the installation for portability. `ReadingWorkspace` resolves absolute file paths in memory and routes reading data to each owning library, retaining its lock until shutdown. Library selection changes catalog/preferences without remounting the reader or closing PDF workers. Independent processes share the manifest with last-save-wins behavior; library-state locks still prevent concurrent edits to the same library. Runtime-state schema version 1 is preserved in LER 1.1.0, so existing reading data remains compatible.
 
+The user runs the managed Windows installation. After user-facing changes, rebuild with `scripts/build-release.ps1` and run `scripts/update-installed.ps1` to update that installation while preserving reading data and integration choices. Close LER first. For installer tests, build with `-ValidationBuild` and run `scripts/test-installer.ps1`: the separate AppId keeps the real installation intact. Windows icons derive from the existing pixel logo through `scripts/generate-icon.ts`. Normal launches, including legacy `--choose` shortcuts, open home without a console directory prompt. Reopening Setup offers update or full removal.
+
 ## Install and verify
 
 With Bun 1.4.4 or newer:

@@ -1,0 +1,28 @@
+name: Windows distribution
+on:
+  workflow_dispatch:
+jobs:
+  package:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+      - run: bun install --frozen-lockfile
+      - run: bun run check
+      - name: Build installer
+        shell: powershell
+        run: .\scripts\build-release.ps1 -DownloadCompiler
+      - name: Validate install and complete uninstall
+        shell: powershell
+        run: |
+          .\scripts\build-release.ps1 -ValidationBuild
+          .\scripts\test-installer.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LER-windows-x64
+          path: |
+            dist/*-Setup-x64.exe
+            dist/*-Setup-x64.exe.sha256
+          if-no-files-found: error

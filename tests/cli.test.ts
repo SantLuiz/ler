@@ -23,6 +23,7 @@ test('entrypoint runs from a different folder with explicit preload and preserve
   expect((await run(['--help'])).out).toContain('LER --choose');expect((await run(['--version'])).out.trim()).toBe(`LER ${VERSION}`);expect((await run(['--bogus'])).code).toBe(1);expect((await run(['missing','--check'])).code).toBe(1);
   const file=path.join(root,"Leitura & $(whoami) ' teste.txt");await fs.writeFile(file,'Text fixture.');
   const direct=await run(['--open',file,'--check']);expect(direct.code).toBe(0);expect(JSON.parse(direct.out).file).toBe(file);expect((await run(['--open',root,'--check'])).code).toBe(1);expect((await run(['--open',path.join(root,'missing.txt'),'--check'])).code).toBe(1);
-  const chosen=Bun.spawn([process.execPath,'--preload',path.join(app,'scripts/preload.ts'),path.join(app,'src/main.tsx'),'--choose','--check'],{cwd:app,stdin:'pipe',stdout:'pipe',stderr:'pipe'});chosen.stdin.write(root+'\n');chosen.stdin.end();const output=await new Response(chosen.stdout).text();expect(await chosen.exited).toBe(0);expect(JSON.parse(output.slice(output.indexOf('{'))).library).toBe(root);
+  // Existing installed shortcuts using --choose must also start without a prompt.
+  const chosen=Bun.spawn([process.execPath,'--preload',path.join(app,'scripts/preload.ts'),path.join(app,'src/main.tsx'),'--choose','--check'],{cwd:root,stdin:'ignore',stdout:'pipe',stderr:'pipe'});const output=await new Response(chosen.stdout).text();expect(await chosen.exited).toBe(0);expect(JSON.parse(output).library).toBe(libraryRoot(parseArgs(['--choose']),root,app));expect(output).not.toContain('Biblioteca / Library');
  }finally{await fs.rm(root,{recursive:true,force:true});}
 },15000);
