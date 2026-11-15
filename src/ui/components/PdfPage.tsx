@@ -1,6 +1,6 @@
-import {createResource, createMemo, createEffect, Show} from 'solid-js';
+import {createResource, createMemo, createEffect, onCleanup, Show} from 'solid-js';
 import {useRenderer} from '@opentui/solid';
-import {imageInfo} from '@opentui/core';
+import {NativeImage} from '@opentui/core';
 import type {Book} from '../../readers/book';
 
 export type PdfViewport = {width:number; height:number; crop?:{left:number;top:number;width:number;height:number}; band:number; bands:number; step:number; horizontal:boolean};
@@ -28,18 +28,24 @@ export function pageViewport(width:number,height:number,columns:number,rows:numb
 export function PdfPage(props:{book:Book; page:number; width:number; height:number; zoom:number; x:number; y:number; protocol:'auto'|'blocks'; lang:'en'|'pt-BR'; onViewport?:(viewport:PdfViewport)=>void}) {
   const renderer=useRenderer();
   const [page]=createResource(()=>({book:props.book,page:props.page}),async({book,page})=>{
-    try {const bytes=await book.resource(`page/${page}`);return {bytes,...imageInfo(bytes),error:''};}
-    catch(error){return {bytes:undefined,width:0,height:0,error:String(error)};}
+    try {return book.pdfPage?{bitmap:await book.pdfPage(page),bytes:undefined,error:''}:{bitmap:undefined,bytes:await book.resource(`page/${page}`),error:''};}
+    catch(error){return {bitmap:undefined,bytes:undefined,error:String(error)};}
   });
   return <Show when={!page.loading&&page()} fallback={<text>{props.lang==='en'?'Rendering PDF page…':'Renderizando página PDF…'}</text>} keyed>{data=>{
+    const image=data.bitmap?NativeImage.fromRgba(data.bitmap.pixels,data.bitmap.width,data.bitmap.height):data.bytes?NativeImage.decode(data.bytes):undefined;
+    onCleanup(()=>image?.dispose());
+    // Warm only one next page after navigation settles; closing or switching cancels the timer.
+    const book=props.book,next=props.page+1;
+    const prefetch=image&&book.pdfPage&&next<book.chapters.length?setTimeout(()=>void book.pdfPage!(next).catch(()=>{}),250):undefined;
+    onCleanup(()=>{if(prefetch)clearTimeout(prefetch);});
     const viewport=createMemo(()=>{
       const resolution=renderer.resolution;
       const aspect=resolution?(resolution.width/renderer.width)/(resolution.height/renderer.height):0.5;
-      return pageViewport(data.width||1,data.height||1,props.width,props.height,props.zoom,props.x,props.y,aspect);
+      return pageViewport(image?.width||1,image?.height||1,props.width,props.height,props.zoom,props.x,props.y,aspect);
     });
     createEffect(()=>props.onViewport?.(viewport()));
-    return <Show when={data.bytes} fallback={<text fg="#e5a0a0">{data.error}</text>}>
-      <image id="pdf-page-image" source={data.bytes} width={viewport().width} height={viewport().height} fit="fit" protocol={props.protocol} crop={viewport().crop}/>
+    return <Show when={image} fallback={<text fg="#e5a0a0">{data.error}</text>}>
+      <image id="pdf-page-image" source={image} width={viewport().width} height={viewport().height} fit="fit" protocol={props.protocol} crop={viewport().crop}/>
     </Show>;
   }}</Show>;
 }

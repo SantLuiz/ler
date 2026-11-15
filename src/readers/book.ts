@@ -6,11 +6,12 @@ import path from 'node:path';
 import {bookFormat, type BookFormat} from './formats';
 import {openText} from './text';
 import {openPdf} from './pdf';
+import type {PdfBitmap} from './pdf-cache';
 
 export type Block = { text: string; image?: string; heading?: boolean };
 export type Chapter = { href: string; title: string; blocks: Block[]; targets?: Record<string, number> };
 export type Anchor = { chapter: number; block: number; offset: number };
-export type Book = { id: string; title: string; format?: BookFormat; chapters: Chapter[]; toc: { label: string; href: string }[]; resource: (href: string) => Promise<Uint8Array>; close: () => void };
+export type Book = { id: string; title: string; format?: BookFormat; chapters: Chapter[]; toc: { label: string; href: string }[]; resource: (href: string) => Promise<Uint8Array>; pdfPage?:(page:number)=>Promise<PdfBitmap>; close: () => void };
 const children = (n: any): any[] => n.children ?? [];
 const text = (n: any): string => n.type === 'text' ? n.data : children(n).map(text).join('');
 function all(n: any, tag: string): any[] { return [...(n.name?.split(':').pop() === tag ? [n] : []), ...children(n).flatMap(c => all(c, tag))]; }
@@ -105,12 +106,13 @@ export function tocAnchor(book: Book, href: string): Anchor | undefined {
   return { chapter, block: id ? book.chapters[chapter].targets?.[id] ?? 0 : 0, offset: 0 };
 }
 export type Line = { text: string; anchor: Anchor; image?: string };
+const graphemes = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
 export function layout(book: Book, width: number, chapter: number): Line[] {
-  const lines: Line[] = []; const segmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
+  const lines: Line[] = [];
   book.chapters[chapter].blocks.forEach((block, b) => {
     if (block.image) { lines.push({ text: block.text, image: block.image, anchor: { chapter, block: b, offset: 0 } }); return; }
     let value = ''; let start = 0; let cells = 0;
-    for (const { segment } of segmenter.segment(block.text)) {
+    for (const { segment } of graphemes.segment(block.text)) {
       const size = Bun.stringWidth(segment);
       if (cells + size > width && value) { const space=value.lastIndexOf(' '); const cut=space>0?space+1:value.length;lines.push({ text: value.slice(0,cut), anchor: { chapter, block: b, offset: start } }); value = value.slice(cut);start+=cut;cells=Bun.stringWidth(value); }
       value += segment; cells += size;

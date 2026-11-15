@@ -20,7 +20,7 @@ docs/                Portuguese README and command reference
 .github/workflows/   Windows CI
 ```
 
-All runtime data stays in `.ler/` inside the installation. Library state, highlights and preferences are under `.ler/libraries/`; caches and temporary files are separate. Runtime-state schema version 1 is preserved in LER 1.0.0, so existing reading data remains compatible.
+All runtime data stays in `.ler/` inside the installation. Library state, highlights and preferences are under `.ler/libraries/`; caches and temporary files are separate. The global tab manifest is `.ler/workspace.json`; its file and library paths are relative to the installation for portability. `ReadingWorkspace` resolves absolute file paths in memory and routes reading data to each owning library, retaining its lock until shutdown. Library selection changes catalog/preferences without remounting the reader or closing PDF workers. Independent processes share the manifest with last-save-wins behavior; library-state locks still prevent concurrent edits to the same library. Runtime-state schema version 1 is preserved in LER 1.1.0, so existing reading data remains compatible.
 
 ## Install and verify
 
@@ -34,11 +34,15 @@ bun run check
 With Node.js/npm instead:
 
 ```powershell
-.\scripts\install.cmd -NoPath -NoContextMenu
+.\scripts\install.cmd -Development -NoPath -NoContextMenu
 .\node_modules\.bin\bun.cmd run check
 ```
 
 `check` runs strict TypeScript checks and the full Bun test suite. Tests cover the native renderer, keyboard/mouse interaction, EPUB/TXT/PDF, highlights, timing, persistence/recovery, workers, CLI, literal Windows paths, installer planning and file forwarding. Installer tests do not change PATH or context-menu registrations. Run the interactive app for visual terminal checks; image quality depends on the terminal.
+
+`bun scripts/benchmark-pdf.ts` compares the previous PNG page pipeline with direct pixels and cached pixels using a generated raster PDF. It excludes document opening and terminal output. See [performance analysis and limits](performance.md) (Portuguese).
+
+The regular installer uses production dependencies and retains a bootstrapped Bun in `.ler/runtime/`. Use `-Development` for the compiler and types. `web-tree-sitter` is explicit because OpenTUI needs it at runtime; unrelated peer dependencies can then be omitted in production. `bun scripts/dependency-size.ts [installation]` measures dependency files, counting hard links once. See the [dependency audit](dependencies.md) (Portuguese).
 
 Both lockfiles are intentional: `bun.lock` fixes Bun installs; `package-lock.json` supports the npm fallback. Keep them synchronized. The runtime minimum and locally bootstrapped Bun version are pinned in `package.json` and checked by the installer.
 

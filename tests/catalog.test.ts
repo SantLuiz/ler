@@ -1,5 +1,5 @@
 import {test,expect} from 'bun:test';
-import {indexLibrary,epubMetadata,searchCatalog,type Catalog} from '../src/library/catalog';
+import {indexLibrary,epubMetadata,searchCatalog,type Catalog,type CatalogEntry} from '../src/library/catalog';
 import {zip} from './fixtures';
 import {promises as fs} from 'node:fs';
 import path from 'node:path';
@@ -15,3 +15,20 @@ test('catalog recursively indexes metadata, names and authors, updates cache and
  }finally{await fs.rm(root,{recursive:true,force:true});}
 });
 test('metadata extraction does not require or read chapter content',async()=>{const root=await fs.mkdtemp(path.join(os.tmpdir(),'leitor-meta-'));try{const file=path.join(root,'book.epub');await fs.writeFile(file,metadata('Só metadados'));expect(await epubMetadata(file)).toEqual({title:'Só metadados',authors:['José Saramago','Outro autor']});}finally{await fs.rm(root,{recursive:true,force:true});}});
+
+test('catalog worker streams bounded batches and flushes its final partial batch before completion',async()=>{
+ const root=await fs.mkdtemp(path.join(os.tmpdir(),'ler-catalog-batches-'));let worker:Worker|undefined;
+ try{
+  for(let i=0;i<205;i++)await fs.writeFile(path.join(root,`${i}.txt`),'Own text.');
+  worker=new Worker(new URL('../src/library/catalog.worker.ts',import.meta.url).href);
+  const batches:CatalogEntry[][]=[];
+  const rows=await new Promise<any[]>((resolve,reject)=>{
+   const entries:any[]=[];worker!.onerror=e=>reject(new Error(e.message));
+   worker!.onmessage=e=>{if(e.data.type==='entries'){batches.push(e.data.entries);entries.push(...e.data.entries);}else if(e.data.type==='done')resolve(entries);else reject(new Error(e.data.message));};
+   worker!.postMessage({root,ignored:'',cached:{}});
+  });
+  expect(rows.length).toBe(205);expect(new Set(rows.map(row=>row.file)).size).toBe(205);
+  expect(batches.every(batch=>batch.length>0&&batch.length<=100)).toBe(true);expect(batches.length).toBeGreaterThanOrEqual(3);
+  expect(rows.every(row=>row.title===path.basename(row.file,'.txt'))).toBe(true);
+ }finally{worker?.terminate();await fs.rm(root,{recursive:true,force:true});}
+});

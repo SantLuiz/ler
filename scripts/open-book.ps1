@@ -5,7 +5,8 @@ try {
     $repo = Split-Path -Parent $PSScriptRoot
     $file = Get-Item -LiteralPath $BookPath
     if ($file.PSIsContainer -or $file.Extension.ToLowerInvariant() -notin @('.epub', '.pdf', '.txt')) { throw 'Selecione um arquivo EPUB, PDF ou TXT.' }
-    $runtime = Join-Path $repo 'node_modules\bun\bin\bun.exe'
+    $runtime = Join-Path $repo '.ler\runtime\bun.exe'
+    if (-not (Test-Path -LiteralPath $runtime)) { $runtime = Join-Path $repo 'node_modules\bun\bin\bun.exe' }
     if (-not (Test-Path -LiteralPath $runtime)) { $runtime = (Get-Command bun -ErrorAction Stop).Source }
     $temporary = Join-Path $repo '.ler\tmp'
     New-Item -ItemType Directory -Path $temporary -Force | Out-Null

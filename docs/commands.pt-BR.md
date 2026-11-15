@@ -8,7 +8,9 @@ Abra a paleta com `/`, F2 ou Ctrl+P. Digite para filtrar, use setas para escolhe
 
 | Comando | Uso |
 | --- | --- |
+| `/change-library [path]` | Trocar o diretório da biblioteca sem fechar o LER; sem valor abre o seletor |
 | `/library` | Explorar pastas da biblioteca |
+| `/palette [name]` | Escolher `blue`, `mint`, `lavender`, `amber` ou `coral`; sem valor alterna |
 | `/settings` | Abrir aparência e preferências |
 | `/continue` | Retomar a última leitura |
 | `/help` | Ver atalhos de teclado |

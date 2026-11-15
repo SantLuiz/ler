@@ -1,5 +1,5 @@
 import {test,expect} from 'bun:test';
-import {parseArgs,libraryRoot} from '../src/cli';
+import {parseArgs,libraryRoot,VERSION} from '../src/cli';
 import {promises as fs} from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -20,7 +20,7 @@ test('entrypoint runs from a different folder with explicit preload and preserve
  try{
   async function run(args:string[]){const child=Bun.spawn([process.execPath,'--preload',path.join(app,'scripts/preload.ts'),path.join(app,'src/main.tsx'),...args],{cwd:root,stdout:'pipe',stderr:'pipe'});return {code:await child.exited,out:await new Response(child.stdout).text(),err:await new Response(child.stderr).text()};}
   const checked=await run(['--check']);expect(checked.code).toBe(0);expect(JSON.parse(checked.out).library).toBe(libraryRoot(parseArgs([]),root,app));expect(await fs.readdir(root)).toEqual([]);
-  expect((await run(['--help'])).out).toContain('LER --choose');expect((await run(['--version'])).out.trim()).toBe('LER 1.0.0');expect((await run(['--bogus'])).code).toBe(1);expect((await run(['missing','--check'])).code).toBe(1);
+  expect((await run(['--help'])).out).toContain('LER --choose');expect((await run(['--version'])).out.trim()).toBe(`LER ${VERSION}`);expect((await run(['--bogus'])).code).toBe(1);expect((await run(['missing','--check'])).code).toBe(1);
   const file=path.join(root,"Leitura & $(whoami) ' teste.txt");await fs.writeFile(file,'Text fixture.');
   const direct=await run(['--open',file,'--check']);expect(direct.code).toBe(0);expect(JSON.parse(direct.out).file).toBe(file);expect((await run(['--open',root,'--check'])).code).toBe(1);expect((await run(['--open',path.join(root,'missing.txt'),'--check'])).code).toBe(1);
   const chosen=Bun.spawn([process.execPath,'--preload',path.join(app,'scripts/preload.ts'),path.join(app,'src/main.tsx'),'--choose','--check'],{cwd:app,stdin:'pipe',stdout:'pipe',stderr:'pipe'});chosen.stdin.write(root+'\n');chosen.stdin.end();const output=await new Response(chosen.stdout).text();expect(await chosen.exited).toBe(0);expect(JSON.parse(output.slice(output.indexOf('{'))).library).toBe(root);

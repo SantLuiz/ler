@@ -1,3 +1,4 @@
+import {shortLibraryPath} from '../src/ui/library-path';
 import {test,expect} from 'bun:test';
 import {testRender} from '@opentui/solid';
 import {App} from '../src/ui/App';
@@ -32,17 +33,15 @@ test('home actions stay hidden until Tab and popup supports keyboard, mouse and 
  }finally{await setup?.dispose();await fs.rm(root,{recursive:true,force:true});}
 });
 
-test('home footer displays the complete absolute library path even in a narrow terminal',async()=>{
+test('home shows the abbreviated library path inside search and leaves it out of the footer',async()=>{
  const root=await fs.mkdtemp(path.join(os.tmpdir(),'ler-complete-library-path-'));let setup:Awaited<ReturnType<typeof testRender>>|undefined;
  try {
   setup=await testRender(()=><App root={root} state={{version:1,books:{},tabs:[],lang:'en'}} opened={[]} exit={async()=>{}}/>,{width:160,height:30});
-  await Bun.sleep(20);await setup.renderOnce();expect(setup.captureCharFrame()).toContain(path.resolve(root));
-  setup.resize(60,25);await setup.renderOnce();
-  const rows=setup.captureCharFrame().split('\n');
-  const first=rows.findIndex(row=>row.trimStart().startsWith(path.resolve(root).slice(0,20)));
-  expect(first).toBeGreaterThanOrEqual(0);
-  const visible=rows.slice(first).map(row=>row.replace('LER 1.0.0','').trim()).join('');
-  expect(visible).toContain(path.resolve(root));
+  await Bun.sleep(20);await setup.renderOnce();expect(setup.captureCharFrame()).toContain(shortLibraryPath(root,52));expect(setup.captureCharFrame()).not.toContain(path.resolve(root));
+  setup.resize(60,25);await setup.renderOnce();const rows=setup.captureCharFrame().split('\n');
+  expect(rows.some(row=>row.includes(shortLibraryPath(root,24)))).toBe(true);
+  expect(rows.slice(-3).join('\n')).not.toContain(shortLibraryPath(root,24));
+  const pathNode=setup.renderer.root.findDescendantById('library-path');expect(pathNode).toBeDefined();
  } finally {await setup?.dispose();await fs.rm(root,{recursive:true,force:true});}
 });
 

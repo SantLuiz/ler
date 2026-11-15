@@ -8,7 +8,9 @@ Open the palette with `/`, F2 or Ctrl+P. Type to filter, use arrows to choose, T
 
 | Command | Purpose |
 | --- | --- |
+| `/change-library [path]` | Choose another library directory without closing LER; omit to open the folder picker |
 | `/library` | Browse library folders |
+| `/palette [name]` | Choose `blue`, `mint`, `lavender`, `amber` or `coral`; omit value to cycle |
 | `/settings` | Open appearance and preferences |
 | `/continue` | Resume the last reading position |
 | `/help` | Show keyboard shortcuts |

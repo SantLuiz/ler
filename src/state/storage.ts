@@ -59,8 +59,8 @@ export async function store(root: string,appDirectory=path.resolve(import.meta.d
   await fs.writeFile(path.join(dir,'library.json'),JSON.stringify({relativeToApp:path.relative(path.resolve(appDirectory),path.resolve(root))||'.'},null,2));
   const filename = path.join(dir, 'state.json'); let state: State = { version: 1, books: {}, tabs: [], lang: Intl.DateTimeFormat().resolvedOptions().locale.startsWith('pt') ? 'pt-BR' : 'en' };
   for (const file of [filename, filename + '.bak']) { try { const parsed = JSON.parse(await fs.readFile(file, 'utf8')); if (parsed.version !== 1 || !parsed.books || !Array.isArray(parsed.tabs)) throw new Error('Invalid state'); state = parsed; break; } catch(e: any) { if(e.code!=='ENOENT') await fs.rename(file,file+'.corrupt-'+Date.now()).catch(()=>{}); } }
-  let queue = Promise.resolve();
-  const save = () => { const json = JSON.stringify(state, null, 2); queue = queue.catch(()=>{}).then(async () => { await fs.writeFile(filename + '.tmp', json); await fs.copyFile(filename, filename + '.bak').catch(() => {}); await fs.rename(filename + '.tmp', filename); }); return queue; };
+  let queue = Promise.resolve();let lastSaved:string|undefined;
+  const save = () => { const json = JSON.stringify(state, null, 2); queue = queue.catch(()=>{}).then(async () => { if(json===lastSaved)return;await fs.writeFile(filename + '.tmp', json); await fs.copyFile(filename, filename + '.bak').catch(async(error)=>{if(error.code==='ENOENT')await fs.writeFile(filename+'.bak',json);else throw error;}); await fs.rename(filename + '.tmp', filename);lastSaved=json; }); return queue; };
   return { directory:dir, state, save, close: async () => { await queue.catch(() => {}); await fs.unlink(lock); } };
   }catch(e){await fs.unlink(lock).catch(()=>{});throw e;}
 }

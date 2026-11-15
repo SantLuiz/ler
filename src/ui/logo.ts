@@ -39,26 +39,26 @@ export function logoPixels(size:'large'|'medium',quantity=100,pixelSize=2):LogoP
   return result;
 }
 
-export function mixBlue(from:string,brightness:number) {
-    const channel=(offset:number)=>Math.round(parseInt(from.slice(offset,offset+2),16)*(1-brightness)+parseInt(logoColors.accent.slice(offset,offset+2),16)*brightness).toString(16).padStart(2,'0');
+export function mixBlue(from:string,brightness:number,accent=logoColors.accent) {
+    const channel=(offset:number)=>Math.round(parseInt(from.slice(offset,offset+2),16)*(1-brightness)+parseInt(accent.slice(offset,offset+2),16)*brightness).toString(16).padStart(2,'0');
     return '#'+[1,3,5].map(channel).join('');
 }
-export function twinkleColor(offset:number,phase:number|undefined,background:string) {
+export function twinkleColor(offset:number,phase:number|undefined,background:string,accent=logoColors.accent) {
   const brightness=phase===undefined?0:([0,0.1,0.2,0.35,0.5,0.7,0.85,1,1,0.85,0.7,0.5,0.35,0.2,0.1,0][(phase+offset)%48]??0);
-  return mixBlue(background,brightness);
+  return mixBlue(background,brightness,accent);
 }
-export function pixelColor(pixel:LogoPixel,phase:number|undefined,background='#101114') {
+export function pixelColor(pixel:LogoPixel,phase:number|undefined,background='#101114',colors=logoColors) {
   if(pixel.kind==='spark'||pixel.kind==='inset') {
-    return twinkleColor(pixel.offset??0,phase,pixel.kind==='inset'?logoColors.text:background);
+    return twinkleColor(pixel.offset??0,phase,pixel.kind==='inset'?colors.text:background,colors.accent);
   }
   if(pixel.kind==='baseline') {
     // A bright head and fading tail travel strictly from left to right, then restart.
-    if(phase===undefined)return logoColors.baseline;
+    if(phase===undefined)return colors.baseline;
     const distance=phase%(pixel.period??31)-(pixel.offset??0);
     const brightness=distance>=0&&distance<7?[1,1,0.85,0.65,0.4,0.2,0.1][distance]:0;
-    return mixBlue(logoColors.baseline,brightness);
+    return mixBlue(colors.baseline,brightness,colors.accent);
   }
-  return logoColors.text;
+  return colors.text;
 }
 
 export function homeStars(width:number,height:number,quantity=100) {

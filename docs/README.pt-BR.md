@@ -1,6 +1,6 @@
 # LER — Leitor Extremamente Reduzido
 
-Um leitor de **EPUB, TXT e PDF no terminal**, feito para usar principalmente com o teclado. A versão **1.0.0** lê seus arquivos localmente: não exige conta, não envia livros e não usa telemetria. A instalação e os testes têm foco no Windows.
+Um leitor de **EPUB, TXT e PDF no terminal**, feito para usar principalmente com o teclado. A versão **1.1.0** lê seus arquivos localmente: não exige conta, não envia livros e não usa telemetria. A instalação e os testes têm foco no Windows.
 
 [English](../README.md) · [Comandos](commands.pt-BR.md)
 
@@ -27,7 +27,7 @@ Set-Location .\LER
 .\scripts\install.cmd
 ```
 
-O instalador baixa as dependências, disponibiliza `LER` no PATH do usuário e registra **Abrir com LER** para EPUB, TXT e PDF. Não é preciso executar como administrador; o aplicativo padrão dos arquivos é preservado.
+O instalador baixa as dependências de uso (as ferramentas de desenvolvimento ficam disponíveis com `-Development`), mantém o Bun local em `.ler/runtime/`, disponibiliza `LER` no PATH do usuário e registra **Abrir com LER** para EPUB, TXT e PDF. Não é preciso executar como administrador; o aplicativo padrão dos arquivos é preservado.
 
 Coloque seus livros na pasta `Biblioteca`, com subpastas se quiser. Mantenha-os **fora da pasta do aplicativo**:
 
@@ -46,7 +46,7 @@ Set-Location "$env:USERPROFILE\Documents\Biblioteca"
 LER
 ```
 
-Digite um título ou autor na busca e pressione Enter. **Tab** abre as opções da home, incluindo a navegação pelas pastas. Confira o caminho da biblioteca no rodapé. Depois de adicionar ou remover livros, use `/refresh` ou Ctrl+R na home.
+Digite um título ou autor na busca e pressione Enter. **Tab** abre as opções da home, incluindo a navegação pelas pastas. O caminho resumido da biblioteca fica dentro da caixa de busca. Clique nele ou pressione **Ctrl+L** para navegar pelas pastas ou digitar outro diretório, sem fechar o LER. Enter explora as pastas; escolha **Usar esta pasta** ou pressione Ctrl+Enter para trocar. Também há `/change-library [caminho]`. As abas dos livros continuam abertas ao trocar de biblioteca. Cada aba mantém o arquivo original e salva progresso, destaques e tempo de leitura na biblioteca de origem; busca, catálogo, estatísticas e aparência acompanham a biblioteca selecionada. Depois de adicionar ou remover livros, use `/refresh` ou Ctrl+R na home.
 
 Também é possível abrir uma pasta ou um arquivo diretamente:
 
@@ -56,6 +56,10 @@ LER --open "D:\Livros\Meu livro.epub"
 ```
 
 No Explorador, clique com o botão direito no livro e escolha **Abrir com LER**. No Windows 11, procure em **Mostrar mais opções**. Se a biblioteca já estiver aberta na versão atual, o arquivo será encaminhado à mesma sessão.
+
+As abas são restauradas na próxima abertura. Livros com o mesmo título mostram a pasta de origem na aba; arquivos de conteúdo idêntico reutilizam a aba existente. Um arquivo movido ou apagado pode não reabrir, mas seus dados de leitura são preservados. Muitos livros abertos, especialmente PDFs, usam mais memória; fechar a aba de um PDF libera seu processo de leitura. As bibliotecas visitadas ficam reservadas até fechar o LER, evitando edições conflitantes. A lista de abas salva é compartilhada pela instalação: se houver janelas independentes simultâneas, a última a salvar determina essa lista.
+
+O seletor de biblioteca tem as abas **Pastas**, **Favoritos e recentes** e **Mais usadas**. Alterne com Tab/Shift+Tab, digite para filtrar os caminhos salvos e use Enter ou clique para abrir. **Ctrl+F** ou a estrela fixa/remove um favorito. Bibliotecas já registradas são encontradas automaticamente; a contagem de acessos começa nesta funcionalidade. Favoritos são preservados mesmo quando a pasta está temporariamente indisponível.
 
 ## Controles essenciais
 
@@ -76,6 +80,8 @@ No Explorador, clique com o botão direito no livro e escolha **Abrir com LER**.
 
 Todos os nomes de comandos são em inglês, independentemente do idioma da interface. Veja a [referência completa](commands.pt-BR.md). O mouse também permite abrir opções, navegar e selecionar texto.
 
+Em **Aparência** (F3 ou `/settings`), escolha **Paleta de cores** com as setas ←/→. Há azul e branco (padrão), menta e creme, lavanda/rosa/marfim, âmbar e marfim, e coral/turquesa/creme. Uma amostra mostra as duas ou três cores de cada opção. A escolha é salva por biblioteca e também pode ser feita por `/palette mint`, `/palette lavender`, `/palette amber`, `/palette coral` ou `/palette blue`.
+
 ## Dados e limitações
 
 Seu progresso, destaques, preferências e catálogo ficam em **`LER/.ler/`**, separados por biblioteca. Faça backup dessa pasta para preservar os dados. O LER identifica livros pelo conteúdo, ajudando a manter o progresso após renomeá-los.
@@ -93,7 +99,7 @@ git pull --ff-only
 .\scripts\install.cmd
 ```
 
-O instalador aceita `-NoPath`, `-NoContextMenu` e `-SkipDependencies`. Para remover o PATH e o menu de contexto, preservando arquivos e leituras:
+O instalador aceita `-NoPath`, `-NoContextMenu`, `-SkipDependencies` e `-Development`. Para remover o PATH e o menu de contexto, preservando arquivos e leituras:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\install.ps1 -Uninstall
@@ -106,6 +112,7 @@ Para liberar espaço depois de fechar o aplicativo, `scripts/clean.ps1` remove a
 O código está em `src/`, testes em `tests/` e instaladores em `scripts/`. Dependências e dados gerados não fazem parte do Git. Veja [estrutura e verificações](development.md).
 
 ```powershell
+.\scripts\install.cmd -Development -NoPath -NoContextMenu
 .\node_modules\.bin\bun.cmd run check
 ```
 

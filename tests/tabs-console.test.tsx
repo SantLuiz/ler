@@ -22,13 +22,14 @@ test('restoring, switching and closing books with different chapter counts prese
   setup=await testRender(()=><App root={root} state={state} opened={opened} exit={async()=>{}}/>,{width:100,height:30});
   for(let i=0;i<100&&opened.length<2;i++){await Bun.sleep(10);await setup.renderOnce();}await Bun.sleep(20);await setup.renderOnce();
   expect(opened.length).toBe(2);
+  const longId=opened[0].id;
   setup.mockInput.pressKey('F6');await setup.renderOnce();expect(setup.captureCharFrame()).toContain('Long chapter 3');
   setup.mockInput.pressKey('F6');await setup.renderOnce();expect(setup.captureCharFrame()).toContain('Short chapter 1');
   setup.mockInput.pressKey('F5');setup.mockInput.pressKey('F6');await setup.renderOnce();expect(setup.captureCharFrame()).toContain('Long chapter 3');
   setup.mockInput.pressKey('s');await setup.renderOnce();
   setup.mockInput.pressEscape();await Bun.sleep(50);await setup.renderOnce();expect(state.tabs.length).toBe(2);expect(setup.captureCharFrame()).toContain('Long chapter 3');
   setup.mockInput.pressEscape();await Bun.sleep(50);await setup.renderOnce();expect(setup.captureCharFrame()).toContain('Leitor Extremamente Reduzido');
-  expect(state.tabs.length).toBe(1);const longId=opened[0].id;expect(state.books[longId].anchor.chapter).toBe(2);expect(state.lastRead).toBe(longId);
+  expect(state.tabs.length).toBe(1);expect(opened.length).toBe(1);expect(opened.some(b=>b.id===longId)).toBe(false);expect(state.books[longId].anchor.chapter).toBe(2);expect(state.lastRead).toBe(longId);
   setup.mockInput.pressKey('F6');await setup.renderOnce();expect(setup.captureCharFrame()).toContain('Short chapter 1');
  } finally {await setup?.dispose();opened.forEach(b=>b.close());await fs.rm(root,{recursive:true,force:true});}
 });

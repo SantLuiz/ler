@@ -1,10 +1,12 @@
 import {commands,type HomeAction} from './home';
 
 export type ReaderAction='search'|'contents'|'bookmarks'|'home'|'close'|'pause'|'highlight'|'language'|'protocol'|
-  'save'|'info'|'tabs'|'switch'|'next-tab'|'previous-tab'|'chapter'|'page'|'next'|'previous'|'start'|'end'|'back'|'bookmark'|'width'|'spacing'|'zoom'|'fit'|'animation';
+  'save'|'info'|'tabs'|'switch'|'next-tab'|'previous-tab'|'chapter'|'page'|'next'|'previous'|'start'|'end'|'back'|'bookmark'|'width'|'spacing'|'zoom'|'fit'|'animation'|'palette'|'change-library';
 export type PaletteCommand={name:string;action:HomeAction|ReaderAction;pt:string;en:string;usage?:string;arguments?:'required'|'optional'};
 type ScopedCommand=PaletteCommand&{scope?:'reading'|'text'|'pdf'|'tabs'};
 const extraCommands:ScopedCommand[]=[
+  {name:'/change-library',action:'change-library',arguments:'optional',usage:'/change-library [path]',pt:'Escolher outra pasta de biblioteca',en:'Choose a different library directory'},
+  {name:'/palette',action:'palette',arguments:'optional',usage:'/palette [blue|mint|lavender|amber|coral]',pt:'Escolher uma paleta de cores; sem valor alterna',en:'Choose a color palette; omit value to cycle'},
   {name:'/save',action:'save',pt:'Salvar progresso e dados agora',en:'Save progress and data now'},
   {name:'/info',action:'info',scope:'reading',pt:'Informações do livro e posição atual',en:'Book information and current position'},
   {name:'/tabs',action:'tabs',scope:'tabs',pt:'Escolher um livro aberto',en:'Choose an open book'},
