@@ -6,7 +6,7 @@ import {HomeLogo} from '../src/components/HomeLogo';
 import {App} from '../src/app';
 import {preferences} from '../src/preferences';
 import {logoPixels,pixelColor,logoColors,homeStars} from '../src/logo';
-import type {State} from '../src/storage';
+import {store,type State} from '../src/storage';
 import {promises as fs} from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
@@ -51,18 +51,33 @@ test('home starfield fills free space with bounded, stable and unique positions'
  expect(stars.some(star=>star.x<20)&&stars.some(star=>star.x>140)).toBe(true);
 });
 
+test('pixel size and quantity change both the logo and home while preferences enforce limits',()=>{
+ expect(preferences()).toMatchObject({animationPixelSize:2,animationDensity:100});
+ expect(preferences({animationPixelSize:99,animationDensity:-20})).toMatchObject({animationPixelSize:3,animationDensity:25});
+ const count=(quantity:number)=>logoPixels('large',quantity).flat().filter(p=>p.kind==='spark'||p.kind==='inset').length;
+ expect(count(25)).toBeLessThan(count(100));expect(count(200)).toBeGreaterThan(count(100));
+ expect(logoPixels('large',100,3).flat().filter(p=>p.kind==='spark').every(p=>p.glyph==='■ ')).toBe(true);
+ expect(homeStars(160,50,25).length).toBeLessThan(homeStars(160,50).length);expect(homeStars(500,200,200)).toHaveLength(480);
+});
+
 test('logo animation preference defaults on and can be disabled through Appearance',async()=>{
  expect(preferences().logoAnimation).toBe(true);expect(preferences({logoAnimation:false}).logoAnimation).toBe(false);
- const root=await fs.mkdtemp(path.join(os.tmpdir(),'ler-logo-setting-'));let setup:Awaited<ReturnType<typeof testRender>>|undefined;
- const state:State={version:1,books:{},tabs:[],lang:'en'};
+ const root=await fs.mkdtemp(path.join(os.tmpdir(),'ler-logo-setting-'));let setup:Awaited<ReturnType<typeof testRender>>|undefined;let disk:Awaited<ReturnType<typeof store>>|undefined;
+ let state:State;
  try {
-  setup=await testRender(()=><App root={root} state={state} opened={[]} exit={async()=>{}}/>,{width:100,height:40});await Bun.sleep(20);await setup.renderOnce();
+  disk=await store(root,path.join(root,'LER'));state=disk.state;state.lang='en';
+  setup=await testRender(()=><App root={root} state={state} persistence={disk} opened={[]} exit={async()=>{}}/>,{width:100,height:40});await Bun.sleep(20);await setup.renderOnce();
   expect(setup.renderer.root.findDescendantById('home-stars')).toBeDefined();
-  setup.mockInput.pressKey('F3');await setup.renderOnce();expect(setup.captureCharFrame()).toContain('Logo animation: On');
+  setup.mockInput.pressKey('F3');await setup.renderOnce();expect(setup.captureCharFrame()).toContain('Home effects: On');
   expect(setup.renderer.root.findDescendantById('home-stars')).toBeUndefined();
   for(let i=0;i<7;i++)setup.mockInput.pressArrow('down');setup.mockInput.pressEnter();await setup.renderOnce();
-  expect(state.preferences?.logoAnimation).toBe(false);expect(setup.captureCharFrame()).toContain('Logo animation: Off');
+  expect(state.preferences?.logoAnimation).toBe(false);expect(setup.captureCharFrame()).toContain('Home effects: Off');
+  setup.mockInput.pressArrow('down');setup.mockInput.pressArrow('right');await setup.renderOnce();expect(setup.captureCharFrame()).toContain('Animation pixel size: Large');
+  setup.mockInput.pressArrow('down');setup.mockInput.pressArrow('right');await setup.renderOnce();expect(setup.captureCharFrame()).toContain('Pixel quantity: 125%');
+  expect(state.preferences).toMatchObject({animationPixelSize:3,animationDensity:125});
   setup.mockInput.pressKey('F5');await setup.renderOnce();expect(setup.renderer.root.findDescendantById('home-logo')).toBeDefined();
   expect(setup.renderer.root.findDescendantById('home-stars')).toBeUndefined();
- } finally {await setup?.dispose();await fs.rm(root,{recursive:true,force:true});}
+  await disk.save();await setup.dispose();setup=undefined;await disk.close();disk=await store(root,path.join(root,'LER'));
+  expect(disk.state.preferences).toMatchObject({logoAnimation:false,animationPixelSize:3,animationDensity:125});
+ } finally {await setup?.dispose();await disk?.close();await fs.rm(root,{recursive:true,force:true});}
 });
