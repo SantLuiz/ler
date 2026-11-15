@@ -54,8 +54,8 @@ PDF é exibido como imagens das páginas, preservando texto, digitalizações, t
 
 | Tecla no PDF | Ação |
 | --- | --- |
-| `Page Up` / `Page Down` | Página anterior / próxima |
-| `Espaço` | Próxima página |
+| `Page Up` / `Page Down` | Página anterior / próxima; com zoom, faixa horizontal anterior / próxima |
+| `Espaço` | Próxima faixa ou página |
 | Setas ou `j` / `k` | Trocar páginas em 100%; deslocar a área visível com zoom |
 | `+` / `-` (`=` ou `i` também ampliam) | Ajustar zoom entre 100% e 400% |
 | `0` | Mostrar a página inteira |
@@ -63,6 +63,8 @@ PDF é exibido como imagens das páginas, preservando texto, digitalizações, t
 | `s` | Listar páginas |
 | `b` / `Shift+B` | Marcar página / listar marcadores |
 | `Esc` | Salvar e fechar a aba, ou fechar um painel aberto |
+
+O zoom aumenta a largura ocupada pela página, aproveitando as laterais disponíveis do terminal. Quando a página ultrapassa a altura da tela, a leitura é dividida em faixas horizontais com pequena sobreposição. O rodapé indica a faixa atual; depois da última faixa, Page Down avança para a próxima página mantendo o zoom. O deslocamento horizontal só é necessário quando a página ampliada também ultrapassa a largura do terminal. `0` volta à página inteira.
 
 A roda do mouse troca páginas em 100% e desloca verticalmente a área ampliada. PDF nesse modo não tem busca nem seleção de texto. PDFs que exigem senha não são abertos; o limite é 256 MiB e 20 mil páginas. A qualidade depende do suporte gráfico do terminal: SIXEL/Kitty oferecem mais detalhes que o modo de blocos.
 

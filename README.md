@@ -177,7 +177,7 @@ PDF pages are rendered locally as images in a background worker using [PDFium](h
 
 | PDF key | Action |
 | --- | --- |
-| `Page Up` / `Page Down`, `Space` | Previous / next page (`Space` advances) |
+| `Page Up` / `Page Down`, `Space` | Previous / next page; while zoomed, previous / next horizontal band (`Space` advances) |
 | Arrow keys / `j` / `k` | Change pages at 100%; pan while zoomed |
 | `+` / `-` (or `=` / `i` to enlarge) | Zoom from 100% to 400% |
 | `0` | Fit the whole page |
@@ -185,6 +185,8 @@ PDF pages are rendered locally as images in a background worker using [PDFium](h
 | `s` | List pages |
 | `b` / `Shift+B` | Bookmark page / list bookmarks |
 | `Esc` | Save and close the tab, or dismiss an open panel |
+
+Zoom expands the displayed page sideways to use the available terminal width. Once the page exceeds the viewport height, it is read in horizontal bands with a small overlap. The footer shows the current band; after the last band, `Page Down` advances to the next page while retaining zoom. Horizontal panning is only needed when the enlarged page also exceeds the terminal width. `0` restores the whole-page view.
 
 The mouse wheel changes pages at 100% and pans vertically while zoomed. PDF text search and selection are unavailable in image mode. PDFs requiring a password are reported as unsupported; the file limit is 256 MiB and 20,000 pages. Image quality depends on the terminal's graphics support; the blocks fallback is less detailed than SIXEL/Kitty.
 

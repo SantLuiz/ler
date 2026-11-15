@@ -10,7 +10,7 @@ import {LOGO,matchingCommands,folderMatches,type HomeAction} from './home';
 import {KeyHints} from './components/KeyHints';
 import {previousPage} from './pagination';
 import {bookFormat,bookTitle} from './formats';
-import {PdfPage} from './components/PdfPage';
+import {PdfPage,adjacentBand,type PdfViewport} from './components/PdfPage';
 
 const dictionary = {
   library: ['Library', 'Biblioteca'], open: ['Open', 'Abrir'], loading: ['Loading…', 'Carregando…'], search: ['Search', 'Buscar'], empty: ['No books here', 'Nenhum livro aqui'], toc: ['Contents', 'Sumário'], marks: ['Bookmarks', 'Marcadores'], help: ['Help', 'Ajuda'], settings: ['Commands', 'Comandos'], image: ['Image unavailable', 'Imagem indisponível'], quit: ['Save and quit', 'Salvar e sair'], language: ['Switch language', 'Trocar idioma'], refresh: ['Refresh library', 'Atualizar biblioteca'], motion: ['Toggle reduced motion', 'Alternar movimento reduzido'], protocol: ['Toggle image blocks / auto', 'Alternar imagens blocos / auto']
@@ -26,7 +26,9 @@ export function App(props: { root: string; appDirectory?: string; state: State; 
   const book = () => tabs()[active()]; const [chapter, setChapter] = createSignal(0); const [line, setLine] = createSignal(0);
   const pdf = () => book()?.format === 'pdf';
   const [pdfZoom,setPdfZoom]=createSignal(1);const [pdfX,setPdfX]=createSignal(0);const [pdfY,setPdfY]=createSignal(0);
-  createEffect(on(()=>[book()?.id,chapter()],()=>{setPdfZoom(1);setPdfX(0);setPdfY(0);}));
+  const [pdfViewport,setPdfViewport]=createSignal<PdfViewport>();
+  createEffect(on(()=>book()?.id,()=>setPdfZoom(1)));
+  createEffect(on(()=>[book()?.id,chapter()],()=>{setPdfX(0);setPdfY(0);setPdfViewport(undefined);}));
   const [directory, setDirectory] = createSignal(root!); const [entries, setEntries] = createSignal<{ name: string; full: string; dir: boolean }[]>([]); const [selected, setSelected] = createSignal(0);
   const [panel, setPanel] = createSignal(''); const [query, setQuery] = createSignal(''); const [status, setStatus] = createSignal(warning);
   const [selectedImage, setSelectedImage] = createSignal('');
@@ -129,8 +131,14 @@ export function App(props: { root: string; appDirectory?: string; state: State; 
       }
       if(pageKeys.includes(e.name)) {
         e.preventDefault();
+        if(pdfZoom()>1&&['pagedown','pageup','space'].includes(e.name)) {
+          const direction=e.name==='pageup'?-1:1;
+          if((direction>0&&pdfY()<1&&(pdfViewport()?.bands??1)>1)||(direction<0&&pdfY()>0))setPdfY(adjacentBand(pdfY(),direction,pdfViewport()?.step??1));
+          else {const previous=chapter();jump({chapter:chapter()+direction,block:0,offset:0});if(direction<0&&chapter()!==previous)setPdfY(1);}
+          return;
+        }
         if(pdfZoom()>1&&['up','down','left','right','j','k'].includes(e.name)) {
-          if(e.name==='left'||e.name==='right')setPdfX(Math.max(0,Math.min(1,pdfX()+(e.name==='left'?-0.15:0.15))));
+          if(e.name==='left'||e.name==='right'){if(pdfViewport()?.horizontal)setPdfX(Math.max(0,Math.min(1,pdfX()+(e.name==='left'?-0.15:0.15))));}
           else setPdfY(Math.max(0,Math.min(1,pdfY()+(['up','k'].includes(e.name)?-0.15:0.15))));
         } else {const next=e.name==='home'?0:e.name==='end'?book()!.chapters.length-1:chapter()+(['pageup','left','up','k'].includes(e.name)?-1:1);jump({chapter:next,block:0,offset:0});}
         return;
@@ -177,7 +185,7 @@ export function App(props: { root: string; appDirectory?: string; state: State; 
     <box flexGrow={1} flexDirection="column" alignItems="center" justifyContent={home()?'center':'flex-start'} onMouseScroll={e=>{if(book()&&!panel()){if(pdf()){const delta=e.scroll?.direction==='up'?-1:1;if(pdfZoom()>1)setPdfY(Math.max(0,Math.min(1,pdfY()+delta*0.1)));else jump({chapter:chapter()+delta,block:0,offset:0});}else move(e.scroll?.direction==='up'?-3:3);}}}>
       <Show when={home()}><HomeScreen/></Show>
       <Show when={active()===-2}><box width="100%" flexDirection="column" paddingTop={1}><text fg="#dddddd"><b>{label('Aparência','Appearance')}</b></text><For each={settingsText()}>{(label,i)=><text height={1} fg={setting()===i()?'#7bb4ff':prefs().foreground} bg={setting()===i()?'#252c38':prefs().background} onMouseDown={()=>{setSetting(i());changeSetting();}}>{setting()===i()?'› ':'  '}{label}: {values()[i()]}</text>}</For><text fg={prefs().foreground}>{language()==='en'?'Font size: controlled by your terminal.\nWindows Terminal: Ctrl + Plus/Minus, or Ctrl + mouse wheel.\nChanges are saved automatically.':'Tamanho da letra: controlado pelo terminal.\nWindows Terminal: Ctrl + Mais/Menos ou Ctrl + roda do mouse.\nAlterações são salvas automaticamente.'}</text></box></Show>
-      <Show when={pdf()}><PdfPage book={book()!} page={chapter()} width={Math.max(20,dimensions().width-6)} height={height()} zoom={pdfZoom()} x={pdfX()} y={pdfY()} protocol={protocol()} lang={language()}/></Show>
+      <Show when={pdf()}><PdfPage book={book()!} page={chapter()} width={Math.max(20,dimensions().width-4)} height={height()} zoom={pdfZoom()} x={pdfX()} y={pdfY()} protocol={protocol()} lang={language()} onViewport={setPdfViewport}/></Show>
       <Show when={book()&&!pdf()}><For each={visible()}>{l=><Show when={l.image} fallback={<text width={width()} height={textHeight()} fg={prefs().foreground}>{l.text}</text>}><Picture href={l.image!}/></Show>}</For></Show>
     </box>
     </Show>
@@ -187,10 +195,10 @@ export function App(props: { root: string; appDirectory?: string; state: State; 
       <Show when={panel()==='color'}><text fg="#eeeeee">{language()==='en'?'Color (#RRGGBB), Enter to apply':'Cor (#RRGGBB), Enter para aplicar'}</text><input focused value={query()} onInput={setQuery} onSubmit={()=>{if(/^#[0-9a-f]{6}$/i.test(query())){updatePrefs({[colorField()]:query()});setPanel('');}else setStatus(language()==='en'?'Use #RRGGBB':'Use #RRGGBB');}}/></Show>
       <Show when={panel()==='image'&&selectedImage()}><Picture href={selectedImage()} height={Math.max(1,dimensions().height-14)}/></Show>
       <Show when={panel()==='search'}><input focused placeholder={t('search')} value={query()} onInput={q=>{setQuery(q);void search(q);}} onSubmit={()=>{const r=results()[selected()]??results()[0];if(r)jump(r.anchor);setPanel('');}}/><For each={results().slice(Math.max(0,selected()-height()+6),Math.max(height()-5,selected()+1))}>{r=><text fg={results()[selected()]===r?'#7bb4ff':'#eeeeee'} onMouseDown={()=>{jump(r.anchor);setPanel('');}}>{r.label}</text>}</For></Show>
-      <Show when={panel()==='help'}><text>{pdf() ? label('PDF: PgUp/PgDn ou Espaço para páginas\n+/- zoom · 0 página inteira · setas para mover\nHome/End primeira/última · s lista de páginas\nb marcador · Shift+B lista\nEsc salvar/fechar aba · Ctrl+C sair\nPDF como imagem: sem busca textual.', 'PDF: PgUp/PgDn or Space for pages\n+/- zoom · 0 fit page · arrows to pan\nHome/End first/last · s page list\nb bookmark · Shift+B bookmarks\nEsc save/close tab · Ctrl+C exit\nPDF image mode: no text search.') : label('↑↓ j/k · PgUp/PgDn ←→ Espaço\nF6 abas · F4 fechar · F2 comandos\n/ buscar · n/N resultados · s sumário\nb marcador · Shift+B lista · d remover\ni ampliar imagem · F12 console\nEsc salvar/fechar aba · Ctrl+C sair', '↑↓ j/k · PgUp/PgDn ←→ Space\nF6 tabs · F4 close · F2 commands\n/ search · n/N results · s contents\nb bookmark · Shift+B bookmarks · d delete\ni enlarge image · F12 console\nEsc save/close tab · Ctrl+C exit')}</text></Show>
+      <Show when={panel()==='help'}><text>{pdf() ? label('PDF: PgUp/PgDn ou Espaço: faixas/páginas\n+/- zoom · 0 página inteira · setas para mover\nHome/End primeira/última · s lista de páginas\nb marcador · Shift+B lista\nEsc salvar/fechar aba · Ctrl+C sair\nPDF como imagem: sem busca textual.', 'PDF: PgUp/PgDn or Space: bands/pages\n+/- zoom · 0 fit page · arrows to pan\nHome/End first/last · s page list\nb bookmark · Shift+B bookmarks\nEsc save/close tab · Ctrl+C exit\nPDF image mode: no text search.') : label('↑↓ j/k · PgUp/PgDn ←→ Espaço\nF6 abas · F4 fechar · F2 comandos\n/ buscar · n/N resultados · s sumário\nb marcador · Shift+B lista · d remover\ni ampliar imagem · F12 console\nEsc salvar/fechar aba · Ctrl+C sair', '↑↓ j/k · PgUp/PgDn ←→ Space\nF6 tabs · F4 close · F2 commands\n/ search · n/N results · s contents\nb bookmark · Shift+B bookmarks · d delete\ni enlarge image · F12 console\nEsc save/close tab · Ctrl+C exit')}</text></Show>
       <Show when={panel()==='commands'}><For each={[t('language'),t('refresh'),t('protocol'),t('quit')]}>{(item,i)=><text fg={selected()%4===i()?'#7bb4ff':'#eeeeee'}>{item}</text>}</For></Show>
       <Show when={panel()==='toc'||panel()==='marks'}><KeyHints items={[["↑↓",label('navegar','navigate')],["enter",label('abrir','open')]]}/><For each={menu().slice(Math.max(0,selected()-menuRows()+1),Math.max(menuRows(),selected()+1))}>{item=><text height={1} width="100%" fg={menu()[selected()]===item?'#ffffff':'#c4cbd6'} bg={menu()[selected()]===item?'#26446b':'#20232a'} onMouseDown={()=>{jump(item.anchor);setPanel('');}}>{menu()[selected()]===item?'› ':'  '}{item.label}</text>}</For></Show>
     </box></Show>
-    <box height={footerRows()+1} flexShrink={0} flexDirection="column"><box flexDirection="row" justifyContent="space-between" height={footerRows()}><text width={book()||busy()?undefined:footerPathWidth()} wrapMode="char" fg="#777777">{busy()?t('loading'):book()?pdf()?`${chapter()+1}/${book()!.chapters.length} · PDF · ${Math.round(pdfZoom()*100)}%`:`${chapter()+1}/${book()!.chapters.length} · ${Math.round(100*(chapter()+line()/Math.max(1,lines().length))/book()!.chapters.length)}%`:libraryPath}</text><Show when={pdf()}><KeyHints items={[["PgUp/PgDn",label('páginas','pages')],["+/−",'zoom'],["↑↓←→",label('mover','pan')],["0",label('ajustar','fit')]]}/></Show><Show when={book()&&!pdf()}><KeyHints items={[["/",label('buscar','search')],["s",label('sumário','contents')],["?",label('atalhos','shortcuts')]]}/></Show><Show when={active()===-2}><KeyHints items={[["↑↓",label('selecionar','select')],["←→",label('ajustar','adjust')],["enter",label('editar','edit')]]}/></Show><Show when={home()}><text width={11} height={1} flexShrink={0} fg="#666666">LER 0.1.0</text></Show></box><text fg="#888888">{status()}</text></box>
+    <box height={footerRows()+1} flexShrink={0} flexDirection="column"><box flexDirection="row" justifyContent="space-between" height={footerRows()}><text width={book()||busy()?undefined:footerPathWidth()} wrapMode="char" fg="#777777">{busy()?t('loading'):book()?pdf()?`${chapter()+1}/${book()!.chapters.length} · PDF · ${Math.round(pdfZoom()*100)}%${(pdfViewport()?.bands??1)>1?` · ${label('faixa','band')} ${pdfViewport()!.band}/${pdfViewport()!.bands}`:''}`:`${chapter()+1}/${book()!.chapters.length} · ${Math.round(100*(chapter()+line()/Math.max(1,lines().length))/book()!.chapters.length)}%`:libraryPath}</text><Show when={pdf()}><KeyHints items={[["PgUp/PgDn",pdfZoom()>1?label('faixas','bands'):label('páginas','pages')],["+/−",'zoom'],["↑↓←→",label('mover','pan')],["0",label('ajustar','fit')]]}/></Show><Show when={book()&&!pdf()}><KeyHints items={[["/",label('buscar','search')],["s",label('sumário','contents')],["?",label('atalhos','shortcuts')]]}/></Show><Show when={active()===-2}><KeyHints items={[["↑↓",label('selecionar','select')],["←→",label('ajustar','adjust')],["enter",label('editar','edit')]]}/></Show><Show when={home()}><text width={11} height={1} flexShrink={0} fg="#666666">LER 0.1.0</text></Show></box><text fg="#888888">{status()}</text></box>
   </box>;
 }

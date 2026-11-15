@@ -30,8 +30,13 @@ test('TXT search and PDF images, page navigation, zoom, bookmarks and Esc resume
    throw new Error('PDF page was not displayed');
   }
   let image=await imageWithWidth(720);expect(image.loadError).toBeNull();expect(setup.captureCharFrame()).toContain('1/2 · PDF · 100%');
-  setup.mockInput.pressKey('+');await setup.renderOnce();expect(setup.captureCharFrame()).toContain('150%');expect(image.crop?.width).toBe(480);
-  setup.mockInput.pressArrow('right');await setup.renderOnce();expect(image.crop!.left).toBeGreaterThan(0);
+  const fittedWidth=image.width;
+  setup.mockInput.pressKey('+');await setup.renderOnce();expect(setup.captureCharFrame()).toContain('150%');expect(image.width).toBeGreaterThan(fittedWidth);expect(image.crop?.width).toBe(720);expect(image.crop?.height).toBe(640);
+  setup.mockInput.pressArrow('right');await setup.renderOnce();expect(image.crop!.left).toBe(0);
+  setup.mockInput.pressKey('\x1b[6~');await setup.renderOnce();expect(setup.captureCharFrame()).toContain('1/2 · PDF · 150% · band 2/2');expect(image.crop!.top).toBe(320);
+  setup.mockInput.pressKey('\x1b[5~');await setup.renderOnce();expect(image.crop!.top).toBe(0);
+  setup.mockInput.pressKey('\x1b[6~');setup.mockInput.pressKey('\x1b[6~');await setup.renderOnce();image=await imageWithWidth(960);expect(setup.captureCharFrame()).toContain('2/2 · PDF · 150%');
+  setup.mockInput.pressKey('\x1b[5~');await setup.renderOnce();image=await imageWithWidth(720);expect(setup.captureCharFrame()).toContain('1/2 · PDF · 150% · band 2/2');expect(image.crop!.top).toBe(320);
   setup.mockInput.pressKey('0');await setup.renderOnce();expect(image.crop).toBeUndefined();
   setup.mockInput.pressKey('\x1b[6~');await setup.renderOnce();image=await imageWithWidth(960);expect(setup.captureCharFrame()).toContain('2/2 · PDF');
   setup.mockInput.pressKey('/');await setup.renderOnce();expect(setup.captureCharFrame()).toContain('text search is unavailable');

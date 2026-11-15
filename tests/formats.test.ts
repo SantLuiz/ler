@@ -6,7 +6,7 @@ import {decode} from 'fast-png';
 import {openBook,layout} from '../src/book';
 import {indexLibrary,type Catalog} from '../src/catalog';
 import {decodeText} from '../src/text';
-import {pageCrop} from '../src/components/PdfPage';
+import {pageViewport,adjacentBand} from '../src/components/PdfPage';
 import {pdfFixture} from './fixtures';
 
 test('TXT decodes accents and BOMs without interpreting markup or terminal controls',async()=>{
@@ -50,8 +50,16 @@ test('library discovers TXT and PDF by filename alongside EPUB without trying to
  } finally {await fs.rm(root,{recursive:true,force:true});}
 });
 
-test('PDF zoom and panning always crop within the page',()=>{
- expect(pageCrop(720,960,2,0,0)).toEqual({left:0,top:0,width:360,height:480});
- expect(pageCrop(720,960,2,1,1)).toEqual({left:360,top:480,width:360,height:480});
- expect(pageCrop(721,961,4,2,-1)).toEqual({left:541,top:0,width:180,height:240});
+test('PDF zoom expands sideways and crops horizontal bands before needing horizontal panning',()=>{
+ const fit=pageViewport(720,960,100,30,1,0,0);
+ expect(fit.width).toBe(45);expect(fit.height).toBe(30);expect(fit.crop).toBeUndefined();
+ const zoom=pageViewport(720,960,100,30,1.5,1,0);
+ expect(zoom.width).toBe(68);expect(zoom.crop).toEqual({left:0,top:0,width:720,height:640});expect(zoom.horizontal).toBe(false);expect(zoom.bands).toBe(2);
+ const bottom=pageViewport(720,960,100,30,1.5,1,1);
+ expect(bottom.crop?.top).toBe(320);expect(bottom.band).toBe(2);
+ const wide=pageViewport(720,960,100,30,3,1,1);
+ expect(wide.width).toBe(100);expect(wide.crop!.left+wide.crop!.width).toBe(720);expect(wide.crop!.top+wide.crop!.height).toBe(960);expect(wide.horizontal).toBe(true);
+ const resized=pageViewport(720,960,200,30,3,1,1);
+ expect(resized.crop?.width).toBe(720);expect(resized.width).toBe(135);
+ expect(adjacentBand(0,1,0.45)).toBe(0.45);expect(adjacentBand(0.9,1,0.45)).toBe(1);expect(adjacentBand(1,-1,0.45)).toBe(0.9);expect(adjacentBand(0,-1,0.45)).toBe(0);
 });
