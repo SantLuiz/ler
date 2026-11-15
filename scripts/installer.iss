@@ -169,19 +169,22 @@ begin
 end;
 
 function PathWithout(Value, Entry: String): String;
-var Part: String; P: Integer;
+var Part: String; P: Integer; More, Kept: Boolean;
 begin
   Result := '';
-  while Value <> '' do begin
+  Kept := False;
+  repeat
     P := Pos(';', Value);
+    More := P <> 0;
     if P = 0 then P := Length(Value) + 1;
     Part := Copy(Value, 1, P - 1);
     Delete(Value, 1, P);
-    if (CompareText(RemoveBackslashUnlessRoot(Part), RemoveBackslashUnlessRoot(Entry)) <> 0) and (Part <> '') then begin
-      if Result <> '' then Result := Result + ';';
+    if CompareText(RemoveBackslashUnlessRoot(Part), RemoveBackslashUnlessRoot(Entry)) <> 0 then begin
+      if Kept then Result := Result + ';';
       Result := Result + Part;
+      Kept := True;
     end;
-  end;
+  until not More;
 end;
 
 procedure CurStepChanged(CurStep: TSetupStep);

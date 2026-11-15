@@ -1,6 +1,6 @@
 # LER — Leitor Extremamente Reduzido
 
-Um leitor de **EPUB, TXT e PDF no terminal**, feito para usar principalmente com o teclado. A versão **1.1.0** lê seus arquivos localmente: não exige conta, não envia livros e não usa telemetria. A instalação e os testes têm foco no Windows.
+Um leitor de **EPUB, TXT e PDF no terminal**, feito para usar principalmente com o teclado. A versão **1.1.1** lê seus arquivos localmente: não exige conta, não envia livros e não usa telemetria. A instalação e os testes têm foco no Windows.
 
 [English](../README.md) · [Comandos](commands.pt-BR.md)
 

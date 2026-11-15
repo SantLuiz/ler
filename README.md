@@ -1,6 +1,6 @@
 # LER — Leitor Extremamente Reduzido
 
-A **terminal reader for EPUB, TXT and PDF**, designed primarily for the keyboard. Version **1.1.0** reads local files without accounts, book uploads or telemetry. Installation and testing focus on Windows.
+A **terminal reader for EPUB, TXT and PDF**, designed primarily for the keyboard. Version **1.1.1** reads local files without accounts, book uploads or telemetry. Installation and testing focus on Windows.
 
 [Português (Brasil)](docs/README.pt-BR.md) · [Commands](docs/commands.md)
 

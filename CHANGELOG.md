@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.1 — 2026-11-15
+
+- Add a GitHub Pages project website matching LER's pixel logo and terminal palette, with Windows downloads, source cloning and Portuguese installation and usage instructions.
+- Publish tested Windows installers and SHA-256 checksums through GitHub Releases.
+- Open the home screen directly from normal shortcuts and terminal launches; choose libraries inside the app.
+- Preserve empty entries and trailing separators in the user's PATH when installing, updating and removing the Windows integration.
+
+
 ## 1.1.0 — 2026-11-15
 
 - Switch libraries in the running app using the abbreviated path, Ctrl+L or `/change-library`, with favorites, recent and most-used folders.
