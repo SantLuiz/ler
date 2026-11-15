@@ -61,6 +61,8 @@ Na primeira abertura de uma biblioteca usada pela versão antiga, o LER migra o 
 
 Para verificar o código: `bun run typecheck` e `bun test`.
 
+Mantenha os dois lockfiles: `bun.lock` fixa a instalação com Bun e `package-lock.json` permite ao instalador preparar Bun via `npm ci` quando necessário. Use fixtures pequenas e próprias nos testes; não inclua livros pessoais, dados de leitura ou capturas de trechos protegidos nos commits. Ao alterar a interface, confira rolagem, redimensionamento, abas e saída em um terminal real e atualize os textos em português e inglês.
+
 Use `i` sobre uma imagem para ampliá-la. Busca textual roda em worker cancelável; resultados podem ser selecionados com as setas e Enter. A faixa de abas acompanha o livro ativo, acessível com F6.
 
 ## Aparência e sumário
@@ -79,4 +81,4 @@ Na busca central da **home** (F5 ou aba LER), digite parte do nome do arquivo, t
 
 Ao digitar a primeira busca, o catálogo é construído em segundo plano lendo apenas os metadados dos EPUBs. Os resultados aparecem conforme os arquivos são encontrados. O índice é salvo junto do progresso; arquivos inalterados não precisam ter os metadados lidos novamente. Use **Ctrl+R** na home ou `/atualizar` após adicionar, mover ou remover livros. Se o EPUB não tiver autor ou estiver inválido, ainda será encontrado pelo nome do arquivo. A busca dentro do livro continua em `/` durante a leitura.
 
-Limitações atuais: sem DRM, layout fixo ou SVG geral; CSS e ênfase simplificados; busca dentro do livro limitada a mil resultados. Alguns erros ainda são bilíngues. A compatibilidade gráfica no Windows Terminal precisa de conferência manual. Consulte [o planejamento](PROJECT_PLAN.md) e o [README em inglês](README.md) para detalhes.
+Limitações atuais: sem DRM, layout fixo ou SVG geral; CSS e ênfase simplificados; busca dentro do livro limitada a mil resultados. Alguns erros ainda são bilíngues. A compatibilidade gráfica no Windows Terminal precisa de conferência manual. Consulte o [README em inglês](README.md) para detalhes.

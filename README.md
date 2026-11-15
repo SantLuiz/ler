@@ -9,7 +9,7 @@ LER is a local, keyboard-first EPUB reader built with TypeScript, SolidJS and Op
 
 **Status:** early development / pre-v0.1.0. The automated suite is green, but native terminal graphics still need validation in a real Windows Terminal session.
 
-[Português (Brasil)](README.pt-BR.md) · [Project plan](PROJECT_PLAN.md) · [Contributing](CONTRIBUTING.md)
+[Português (Brasil)](README.pt-BR.md)
 
 ## Why LER?
 
@@ -213,6 +213,8 @@ If Bun is not installed globally, the repository's installer can bootstrap it th
 
 The CI workflow runs type checking and the full test suite on Windows for every push and pull request.
 
+`package-lock.json` is also required: the Windows installer uses `npm ci` to bootstrap Bun when it is not installed. Keep both lockfiles. Use small, self-authored test fixtures and do not commit personal books, reading data or screenshots of copyrighted passages. For rendering changes, check scrolling, resizing, tab switching and exit cleanup in a real terminal; update English and Portuguese interface text together.
+
 ## Project structure
 
 ```text
@@ -239,8 +241,6 @@ src/
 - In-book search returns at most 1,000 matches.
 - SIXEL graphics and image interaction still require validation in a real compatible terminal.
 - Some error messages remain bilingual while localization is being completed.
-
-See [PROJECT_PLAN.md](PROJECT_PLAN.md) for the remaining work before a v0.1.0 release.
 
 ## License
 
