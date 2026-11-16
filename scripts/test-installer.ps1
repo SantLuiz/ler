@@ -26,7 +26,7 @@ try {
     Invoke-InstallerProcess $InstallerPath ('/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /LANG={2} /TASKS="addtopath" /DIR="{0}" /LOG="{1}\install.log"' -f $target, $fixture, $Language)
     $installedBun = Join-Path $target '.ler\runtime\bun.exe'
     $helpLanguage = if ($Language -eq 'english') { 'en' } else { 'pt-BR' }
-    $help = & $installedBun --preload (Join-Path $target 'scripts\preload.ts') (Join-Path $target 'src\main.tsx') --lang $helpLanguage --help
+    $help = & $installedBun --preload (Join-Path $target 'scripts\preload.js') (Join-Path $target 'src\main.js') --lang $helpLanguage --help
     $expectedHelp = if ($Language -eq 'english') { 'Show help' } else { 'Mostrar ajuda' }
     if ($LASTEXITCODE -ne 0 -or ($help -join "`n") -notlike "*$expectedHelp*") { throw 'Installed command-line help did not use the requested language.' }
     if (-not (Test-Path -LiteralPath (Join-Path $target 'README.md')) -or -not (Test-Path -LiteralPath (Join-Path $target 'LEIA-ME.md'))) { throw 'Both installed reading guides must be present.' }
@@ -37,15 +37,18 @@ try {
     $installedPath = [Environment]::GetEnvironmentVariable('Path', 'User')
     if (@($installedPath -split ';') -notcontains (Join-Path $target 'bin')) { throw 'Comando LER nao registrado.' }
     if ((Test-Path -LiteralPath (Join-Path $target 'node_modules\typescript')) -or (Test-Path -LiteralPath (Join-Path $target '.git'))) { throw 'Ferramentas de desenvolvimento foram incluidas.' }
+    if ((Test-Path -LiteralPath (Join-Path $target 'node_modules\@babel')) -and @(Get-ChildItem -LiteralPath (Join-Path $target 'node_modules\@babel') -Force).Count) { throw 'The runtime still includes Babel.' }
+    if (Test-Path -LiteralPath (Join-Path $target 'src\main.tsx')) { throw 'The runtime was not precompiled.' }
     & (Join-Path $target 'bin\ler.cmd') --check
     if ($LASTEXITCODE -ne 0) { throw 'LER nao inicia sem ferramentas globais.' }
     # Validate native UI and the PDF worker/WASM from the installed modules.
     $testFiles = Join-Path $target 'tests'
-    New-Item -ItemType Directory -Path $testFiles | Out-Null
-    foreach ($name in @('formats.test.ts', 'fixtures.ts', 'render.test.ts')) { Copy-Item -LiteralPath (Join-Path $repo "tests\$name") -Destination $testFiles }
+    $builderBun = @((Join-Path $repo '.ler\runtime\bun.exe'), (Join-Path $repo 'node_modules\bun\bin\bun.exe'), (Get-Command bun -ErrorAction SilentlyContinue).Source) | Where-Object { $_ -and (Test-Path -LiteralPath $_) } | Select-Object -First 1
+    & $builderBun (Join-Path $repo 'scripts\prepare-runtime.ts') $target --tests-only
+    if ($LASTEXITCODE -ne 0) { throw 'Could not prepare compiled runtime tests.' }
     Push-Location -LiteralPath $target
     try {
-        & (Join-Path $target '.ler\runtime\bun.exe') test tests/formats.test.ts tests/render.test.ts
+        & (Join-Path $target '.ler\runtime\bun.exe') test
         if ($LASTEXITCODE -ne 0) { throw 'Falha nos testes de PDF e interface do pacote instalado.' }
     } finally { Pop-Location }
     # Only these test-owned files are outside the installer manifest.

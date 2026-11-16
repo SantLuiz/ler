@@ -32,7 +32,8 @@ test('direct file opening restores its position and another launch forwards to t
   setup=await testRender(()=><App root={root} initialFile={second} state={state} persistence={disk} opened={opened} exit={async()=>{}}/>,{width:100,height:30});
   for(let i=0;i<100&&!setup.captureCharFrame().includes('Saved position in second book.');i++){await Bun.sleep(10);await setup.renderOnce();}
   expect(setup.captureCharFrame()).toContain('Saved position in second book.');expect(setup.captureCharFrame()).not.toContain('Opening paragraph.');expect(state.tabs.length).toBe(2);
-  const child=Bun.spawn([process.execPath,'--preload',path.join(app,'scripts/preload.ts'),path.join(app,'src/main.tsx'),'--lang','en','--library',root,'--open',first],{cwd:root,stdout:'pipe',stderr:'pipe'});
+  const compiled=import.meta.path.endsWith('.js');
+  const child=Bun.spawn([process.execPath,'--preload',path.join(app,`scripts/preload.${compiled?'js':'ts'}`),path.join(app,`src/main.${compiled?'js':'tsx'}`),'--lang','en','--library',root,'--open',first],{cwd:root,stdout:'pipe',stderr:'pipe'});
   const output=await new Response(child.stdout).text();expect(await child.exited).toBe(0);expect(output).toContain('Sent file to the running LER');
   for(let i=0;i<150&&!setup.captureCharFrame().includes('First book content.');i++){await Bun.sleep(10);await setup.renderOnce();}
   expect(setup.captureCharFrame()).toContain('First book content.');expect(state.tabs.length).toBe(2);

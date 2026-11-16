@@ -91,20 +91,30 @@ Name: contextmenu; Description: "{cm:Context}"; Flags: checkedonce
 [Files]
 Source: "{#PayloadDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
+; Replace only managed code/dependencies when migrating from source releases.
+; Reading data and the private runtime in .ler remain in place.
+[InstallDelete]
+Type: filesandordirs; Name: "{app}\src"
+Type: filesandordirs; Name: "{app}\node_modules"
+Type: filesandordirs; Name: "{app}\scripts"
+Type: files; Name: "{app}\bunfig.toml"
+Type: files; Name: "{app}\bun.lock"
+Type: files; Name: "{app}\tsconfig.json"
+
 [INI]
 Filename: "{app}\ler-install.ini"; Section: "LER"; Key: "Installer"; String: "InnoSetup"
 
 [Icons]
-Name: "{userprograms}\{#ShortcutName}"; Filename: "{app}\.ler\runtime\bun.exe"; Parameters: "--preload ""{app}\scripts\preload.ts"" ""{app}\src\main.tsx"""; WorkingDir: "{userdocs}"; IconFilename: "{app}\assets\ler.ico"; Check: ShouldCreateStartMenuIcon
-Name: "{userdesktop}\{#ShortcutName}"; Filename: "{app}\.ler\runtime\bun.exe"; Parameters: "--preload ""{app}\scripts\preload.ts"" ""{app}\src\main.tsx"""; WorkingDir: "{userdocs}"; IconFilename: "{app}\assets\ler.ico"; Check: ShouldCreateDesktopIcon
+Name: "{userprograms}\{#ShortcutName}"; Filename: "{app}\.ler\runtime\bun.exe"; Parameters: "--preload ""{app}\scripts\preload.js"" ""{app}\src\main.js"""; WorkingDir: "{userdocs}"; IconFilename: "{app}\assets\ler.ico"; Check: ShouldCreateStartMenuIcon
+Name: "{userdesktop}\{#ShortcutName}"; Filename: "{app}\.ler\runtime\bun.exe"; Parameters: "--preload ""{app}\scripts\preload.js"" ""{app}\src\main.js"""; WorkingDir: "{userdocs}"; IconFilename: "{app}\assets\ler.ico"; Check: ShouldCreateDesktopIcon
 
 [Registry]
 Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.epub\shell\LER.open"; ValueType: string; ValueData: "{cm:OpenWith}"; Flags: uninsdeletekey; Tasks: contextmenu
-Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.epub\shell\LER.open\command"; ValueType: string; ValueData: """{app}\.ler\runtime\bun.exe"" --preload ""{app}\scripts\preload.ts"" ""{app}\src\main.tsx"" --open ""%1"""; Tasks: contextmenu
+Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.epub\shell\LER.open\command"; ValueType: string; ValueData: """{app}\.ler\runtime\bun.exe"" --preload ""{app}\scripts\preload.js"" ""{app}\src\main.js"" --open ""%1"""; Tasks: contextmenu
 Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.pdf\shell\LER.open"; ValueType: string; ValueData: "{cm:OpenWith}"; Flags: uninsdeletekey; Tasks: contextmenu
-Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.pdf\shell\LER.open\command"; ValueType: string; ValueData: """{app}\.ler\runtime\bun.exe"" --preload ""{app}\scripts\preload.ts"" ""{app}\src\main.tsx"" --open ""%1"""; Tasks: contextmenu
+Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.pdf\shell\LER.open\command"; ValueType: string; ValueData: """{app}\.ler\runtime\bun.exe"" --preload ""{app}\scripts\preload.js"" ""{app}\src\main.js"" --open ""%1"""; Tasks: contextmenu
 Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.txt\shell\LER.open"; ValueType: string; ValueData: "{cm:OpenWith}"; Flags: uninsdeletekey; Tasks: contextmenu
-Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.txt\shell\LER.open\command"; ValueType: string; ValueData: """{app}\.ler\runtime\bun.exe"" --preload ""{app}\scripts\preload.ts"" ""{app}\src\main.tsx"" --open ""%1"""; Tasks: contextmenu
+Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.txt\shell\LER.open\command"; ValueType: string; ValueData: """{app}\.ler\runtime\bun.exe"" --preload ""{app}\scripts\preload.js"" ""{app}\src\main.js"" --open ""%1"""; Tasks: contextmenu
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}\.ler"

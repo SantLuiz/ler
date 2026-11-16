@@ -6,6 +6,7 @@ set "TMP=%TEMP%"
 set "TMPDIR=%TEMP%"
 set "BUN_RUNTIME_TRANSPILER_CACHE_PATH=%LER_ROOT%\.ler\cache\transpiler"
 if not exist "%TEMP%" mkdir "%TEMP%"
+if exist "%LER_ROOT%\src\main.js" goto compiled
 if exist "%LER_ROOT%\.ler\runtime\bun.exe" goto runtime
 if exist "%LER_ROOT%\node_modules\bun\bin\bun.exe" goto local
 where bun >nul 2>nul
@@ -14,6 +15,9 @@ bun --preload "%LER_ROOT%\scripts\preload.ts" "%LER_ROOT%\src\main.tsx" %*
 exit /b %errorlevel%
 :runtime
 "%LER_ROOT%\.ler\runtime\bun.exe" --preload "%LER_ROOT%\scripts\preload.ts" "%LER_ROOT%\src\main.tsx" %*
+exit /b %errorlevel%
+:compiled
+"%LER_ROOT%\.ler\runtime\bun.exe" --preload "%LER_ROOT%\scripts\preload.js" "%LER_ROOT%\src\main.js" %*
 exit /b %errorlevel%
 :local
 "%LER_ROOT%\node_modules\bun\bin\bun.exe" --preload "%LER_ROOT%\scripts\preload.ts" "%LER_ROOT%\src\main.tsx" %*

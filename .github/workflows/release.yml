@@ -62,7 +62,10 @@ jobs:
       - name: Prepare release notes
         shell: pwsh
         run: |
-          @((Get-Content scripts/release-readme.en.md -Raw), '---', (Get-Content scripts/release-readme.md -Raw)) | Set-Content dist/release-notes.md -Encoding utf8
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          $section = ((Get-Content CHANGELOG.md -Raw) -split '(?m)^## ')[1].Trim()
+          if (-not $section.StartsWith($version + ' ')) { throw 'Latest changelog entry must match the release version.' }
+          @(('## ' + $section), '---', (Get-Content scripts/release-readme.en.md -Raw), '---', (Get-Content scripts/release-readme.md -Raw)) | Set-Content dist/release-notes.md -Encoding utf8
       - name: Create draft and upload verified assets
         shell: pwsh
         run: |

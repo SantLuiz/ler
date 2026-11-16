@@ -27,8 +27,9 @@ test('CLI chooses cwd, repo parent or explicit library without a remembered-fold
 });
 test('entrypoint runs from a different folder with explicit preload and preserves cwd',async()=>{
  const root=await fs.mkdtemp(path.join(os.tmpdir(),'LER biblioteca com espaços & '));const app=path.resolve(import.meta.dir,'..');
+ const compiled=import.meta.path.endsWith('.js');const preload=path.join(app,`scripts/preload.${compiled?'js':'ts'}`),entry=path.join(app,`src/main.${compiled?'js':'tsx'}`);
  try{
-  async function run(args:string[]){const child=Bun.spawn([process.execPath,'--preload',path.join(app,'scripts/preload.ts'),path.join(app,'src/main.tsx'),...args],{cwd:root,stdout:'pipe',stderr:'pipe'});return {code:await child.exited,out:await new Response(child.stdout).text(),err:await new Response(child.stderr).text()};}
+  async function run(args:string[]){const child=Bun.spawn([process.execPath,'--preload',preload,entry,...args],{cwd:root,stdout:'pipe',stderr:'pipe'});return {code:await child.exited,out:await new Response(child.stdout).text(),err:await new Response(child.stderr).text()};}
   const checked=await run(['--check']);expect(checked.code).toBe(0);expect(JSON.parse(checked.out).library).toBe(libraryRoot(parseArgs([]),root,app));expect(await fs.readdir(root)).toEqual([]);
   expect((await run(['--help'])).out).toContain('LER --choose');expect((await run(['--version'])).out.trim()).toBe(`LER ${VERSION}`);expect((await run(['--bogus'])).code).toBe(1);expect((await run(['missing','--check'])).code).toBe(1);
   expect((await run(['--lang','en','--help'])).out).toContain('Show help');
@@ -37,6 +38,6 @@ test('entrypoint runs from a different folder with explicit preload and preserve
   const file=path.join(root,"Leitura & $(whoami) ' teste.txt");await fs.writeFile(file,'Text fixture.');
   const direct=await run(['--open',file,'--check']);expect(direct.code).toBe(0);expect(JSON.parse(direct.out).file).toBe(file);expect((await run(['--open',root,'--check'])).code).toBe(1);expect((await run(['--open',path.join(root,'missing.txt'),'--check'])).code).toBe(1);
   // Existing installed shortcuts using --choose must also start without a prompt.
-  const chosen=Bun.spawn([process.execPath,'--preload',path.join(app,'scripts/preload.ts'),path.join(app,'src/main.tsx'),'--choose','--check'],{cwd:root,stdin:'ignore',stdout:'pipe',stderr:'pipe'});const output=await new Response(chosen.stdout).text();expect(await chosen.exited).toBe(0);expect(JSON.parse(output).library).toBe(libraryRoot(parseArgs(['--choose']),root,app));expect(output).not.toContain('Biblioteca / Library');
+  const chosen=Bun.spawn([process.execPath,'--preload',preload,entry,'--choose','--check'],{cwd:root,stdin:'ignore',stdout:'pipe',stderr:'pipe'});const output=await new Response(chosen.stdout).text();expect(await chosen.exited).toBe(0);expect(JSON.parse(output).library).toBe(libraryRoot(parseArgs(['--choose']),root,app));expect(output).not.toContain('Biblioteca / Library');
  }finally{await fs.rm(root,{recursive:true,force:true});}
 },15000);

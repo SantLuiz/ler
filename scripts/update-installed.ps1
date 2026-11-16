@@ -29,13 +29,10 @@ if ($process.ExitCode -ne 0) { throw "Failed to update LER: $($process.ExitCode)
 foreach ($file in $readingHashes.Keys) {
     if (-not (Test-Path -LiteralPath $file) -or (Get-FileHash -LiteralPath $file).Hash -ne $readingHashes[$file]) { throw 'A reading data file changed during the update. Check the installation.' }
 }
-$files = @('package.json', 'bun.lock', 'bunfig.toml', 'tsconfig.json', 'scripts\preload.ts')
-foreach ($directory in @('src', 'bin', 'assets')) {
-    $files += Get-ChildItem -LiteralPath (Join-Path $repo $directory) -Recurse -File | ForEach-Object { $_.FullName.Substring($repo.Length + 1) }
-}
-foreach ($relative in $files) {
-    $installedFile = Join-Path $target $relative
-    if (-not (Test-Path -LiteralPath $installedFile) -or (Get-FileHash -LiteralPath (Join-Path $repo $relative)).Hash -ne (Get-FileHash -LiteralPath $installedFile).Hash) {
+$sources = Get-Content -LiteralPath (Join-Path $target 'build-sources.json') -Raw | ConvertFrom-Json
+foreach ($property in $sources.PSObject.Properties) {
+    $relative = $property.Name
+    if ((Get-FileHash -LiteralPath (Join-Path $repo $relative)).Hash -ne $property.Value) {
         throw "The installer is outdated ($relative). Rebuild before updating."
     }
 }

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.3 — 2026-11-15
+
+- Precompile the installed interface during release builds, removing Babel and its compiler dependencies from the runtime installation.
+- Load terminal and interface modules only when opening the interface; help, version, checks and file forwarding avoid that work.
+- Preserve module locations, worker assets, Unicode paths and existing reading data during migration from source-based installers.
+- Validate the precompiled distribution with the CLI and reader test suites, plus isolated installation, update and removal checks.
+- Add a reproducible startup/import memory benchmark and optional cleanup of generated builds while retaining the current installer.
+
 ## 1.1.2 — 2026-11-15
 
 - Add a complete English website at `/en/` and a Portuguese/English language switch that works without JavaScript.

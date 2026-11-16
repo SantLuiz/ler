@@ -46,6 +46,10 @@ With Node.js/npm instead:
 
 The regular installer uses production dependencies and retains a bootstrapped Bun in `.ler/runtime/`. Use `-Development` for the compiler and types. `web-tree-sitter` is explicit because OpenTUI needs it at runtime; unrelated peer dependencies can then be omitted in production. `bun scripts/dependency-size.ts [installation]` measures dependency files, counting hard links once. See the [dependency audit](dependencies.md) (Portuguese).
 
+Graphical releases from 1.1.3 precompile every source module to JavaScript with `scripts/prepare-runtime.ts`. Module directories remain intact for storage defaults and worker URLs. The Solid adapter is bundled separately; it and the application share the same client Solid runtime. The frozen production dependency tree is reduced by following package manifests, excluding the build compiler. Vendor packages retain their files, native/WASM assets and licenses; bundled licenses are recorded in `THIRD-PARTY-NOTICES.txt`. The source checkout still uses its development preload and compiler.
+
+`bun scripts/benchmark-startup.ts [installation]` reports median process startup/check time, UI module import time and RSS after import. It opens no libraries and excludes terminal drawing and book restoration. The isolated installer validator compiles the reader/CLI tests on the build machine, then runs them with only the installed runtime and production modules.
+
 Both lockfiles are intentional: `bun.lock` fixes Bun installs; `package-lock.json` supports the npm fallback. Keep them synchronized. The runtime minimum and locally bootstrapped Bun version are pinned in `package.json` and checked by the installer.
 
 ## What belongs in Git
@@ -63,3 +67,5 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\clean.ps1
 ```
 
 This only removes `.cache/`, `.ler/cache/` and `.ler/tmp/`. It preserves library state, legacy data, backups and installed dependencies. The next dependency install may need network access again.
+
+Add `-BuildArtifacts` to also clear generated contents of `dist/`, retaining the current version's normal setup executable and checksum. Run this after installer validation, with no builds or validation installations active.

@@ -18,7 +18,7 @@ if (navigator.clipboard && copyButton) {
 // before the first release, and when the public API rate limit is reached.
 async function loadRelease() {
   try {
-    const response = await fetch('https://api.github.com/repos/SantLuiz/ler/releases/latest', {signal: AbortSignal.timeout(6000)});
+    const response = await fetch('https://api.github.com/repos/SantLuiz/ler/releases/latest', {signal: AbortSignal.timeout(6000), cache: 'no-store'});
     if (!response.ok) return;
     const release = await response.json();
     const installer = release.assets?.find(asset => /^LER-(?:\d+\.\d+\.\d+-)?Setup-x64\.exe$/.test(asset.name));

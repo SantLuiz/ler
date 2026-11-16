@@ -27,12 +27,13 @@ $work = Join-Path $dist ([guid]::NewGuid().ToString('N'))
 $app = Join-Path $work 'payload'
 New-Item -ItemType Directory -Path $app -Force | Out-Null
 try {
-    foreach ($name in @('src', 'bin', 'assets', 'package.json', 'bun.lock', 'bunfig.toml', 'tsconfig.json', 'LICENSE')) {
+    foreach ($name in @('bin', 'assets', 'package.json', 'bun.lock', 'LICENSE')) {
         Copy-Item -LiteralPath (Join-Path $repo $name) -Destination $app -Recurse
     }
     $scripts = Join-Path $app 'scripts'
     New-Item -ItemType Directory -Path $scripts | Out-Null
-    Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'preload.ts') -Destination $scripts
+    $preload = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'preload.ts') -Raw
+    $preload.Substring(0, $preload.IndexOf('const {ensureSolidTransformPlugin}')) | Set-Content -LiteralPath (Join-Path $scripts 'preload.js') -Encoding utf8
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'release-readme.md') -Destination (Join-Path $app 'LEIA-ME.md')
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'release-readme.en.md') -Destination (Join-Path $app 'README.md')
     $runtime = Join-Path $app '.ler\runtime'
@@ -48,6 +49,17 @@ try {
             if ($LASTEXITCODE -ne 0) { throw 'Failed to prepare production dependencies.' }
         } finally { Pop-Location }
     } finally { $env:BUN_INSTALL_CACHE_DIR = $originalCache }
+    & $bun (Join-Path $PSScriptRoot 'prepare-runtime.ts') $app
+    if ($LASTEXITCODE -ne 0) { throw 'Failed to precompile the runtime.' }
+    # The frozen source lock is build input, not a runtime package-manager entry.
+    Remove-Item -LiteralPath (Join-Path $app 'bun.lock')
+    $sourceFiles = @('package.json', 'bun.lock', 'scripts\prepare-runtime.ts', 'scripts\preload.ts', 'scripts\build-release.ps1', 'scripts\installer.iss')
+    foreach ($directory in @('src', 'bin', 'assets')) {
+        $sourceFiles += Get-ChildItem -LiteralPath (Join-Path $repo $directory) -Recurse -File | ForEach-Object { $_.FullName.Substring($repo.Length + 1) }
+    }
+    $sourceHashes = @{}
+    foreach ($file in $sourceFiles) { $sourceHashes[$file] = (Get-FileHash -LiteralPath (Join-Path $repo $file)).Hash }
+    $sourceHashes | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $app 'build-sources.json') -Encoding utf8
     # Validate with only Windows commands on PATH.
     $originalPath = $env:Path
     try {

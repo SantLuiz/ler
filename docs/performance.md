@@ -1,5 +1,25 @@
 # Desempenho
 
+## Inicialização — 1.1.3
+
+Comparação local da instalação gerenciada antes (1.1.2) e depois (1.1.3), Windows x64, Bun 1.4.4. Mediana de cinco processos novos por cenário, após descartar a primeira rodada; sem abrir ou modificar bibliotecas pessoais.
+
+| Medição | Antes | Depois |
+| --- | ---: | ---: |
+| Processo + `--check` | 527,51 ms | 32,22 ms |
+| Processo + importação da interface | 535,23 ms | 97,73 ms |
+| RSS após importar a interface e solicitar GC | 141,54 MiB | 54,91 MiB |
+
+A abertura anterior carregava Babel e transformava os módulos TSX a cada processo. O build agora faz essa transformação uma vez e instala JavaScript pronto, com o adaptador Solid agrupado e sem o compilador. A entrada também importa a interface somente após processar ajuda, versão, validação da pasta e encaminhamento de arquivo para uma sessão existente.
+
+Reproduza com `bun scripts/benchmark-startup.ts "C:\caminho\do\LER"`. O tempo de importação caiu cerca de 82%; o RSS desse cenário caiu cerca de 61%. São medições da preparação do aplicativo, **não do tempo completo até a tela aparecer**: criação da janela pelo Windows, desenho do terminal, restauração de abas e abertura dos livros estão fora do benchmark. O RSS inclui o processo e bibliotecas carregadas nesse cenário; não representa a memória de uma sessão com livros abertos.
+
+A versão instalada passou por `--check` via CMD/PATH e pelo lançador do shell, além de 71 testes executados com os módulos pré-compilados, sem Babel ou ferramentas de desenvolvimento. Instalação, atualização, preservação dos dados, atalhos legados e remoção foram validados com AppId separado em português e inglês. A atualização da instalação pessoal conferiu os hashes dos dados de leitura antes e depois.
+
+Uma cópia temporária do código e das dependências instalados também abriu a home em um terminal real com uma biblioteca vazia e encerrou com Ctrl+C (código 0). Essa verificação exercitou a entrada principal e o carregamento tardio da interface sem acessar os dados pessoais. A limpeza do repositório removeu 731,94 MiB de caches e artefatos antigos, preservando o instalador 1.1.3, seu checksum e os dados/backups.
+
+## Histórico: leitura e PDF
+
 Análise local de 15/11/2026, Windows, Bun 1.4.4. Os números abaixo são medições de uma imagem sintética, não uma promessa para todos os livros.
 
 ## PDF

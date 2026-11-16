@@ -1,5 +1,23 @@
 # Dependências, espaço e memória
 
+## Distribuição pré-compilada — 1.1.3
+
+A instalação gráfica agora contém JavaScript já transformado. Babel, seus plugins e dependências de compilação ficam no ambiente de desenvolvimento. O adaptador Solid é agrupado durante o build; os módulos do aplicativo e os workers preservam seus diretórios e compartilham a mesma implementação cliente do Solid. O pacote mantém os arquivos e as licenças das dependências de execução, incluindo DLL e WASM.
+
+| Dependências + Bun local | 1.1.2 | 1.1.3 |
+| --- | ---: | ---: |
+| Tamanho lógico, descontando hard links | 177,78 MiB | 161,05 MiB |
+| Arquivos | 3.767 | 1.054 |
+| `node_modules` | 67,84 MiB | 51,11 MiB |
+
+São **16,73 MiB a menos** no conjunto de dependências/runtime (9,4%) e aproximadamente 72% menos arquivos. O runtime Bun permanece com 109,94 MiB. O instalador passou de 55.158.950 para 53.003.186 bytes. As medições excluem livros, caches, dados de leitura e arredondamento por blocos do disco. O adaptador JavaScript agrupado fica em `src/runtime-solid.js`, fora do escopo da tabela de dependências.
+
+A redução segue o grafo dos manifestos após uma instalação de produção com lockfile congelado. Não há remoção seletiva de arquivos internos dos pacotes nativos/PDFium. Os dois lockfiles do repositório continuam necessários para os fluxos Bun e npm. `scripts/clean.ps1 -BuildArtifacts` remove caches e builds descartáveis, mantendo o instalador normal atual, seu checksum, os dados de leitura, os backups e as ferramentas de desenvolvimento.
+
+O [benchmark de inicialização](performance.md) também mede o RSS após importar os módulos da interface. Os testes da distribuição usam o runtime instalado sem Babel e validam a leitura, imagens, workers, entrada de teclado/mouse e persistência.
+
+## Histórico da distribuição por fontes — até 1.1.2
+
 Análise de 15/11/2026, Windows x64, Bun 1.4.4. Nenhum formato ou recurso de leitura foi removido.
 
 ## Espaço medido

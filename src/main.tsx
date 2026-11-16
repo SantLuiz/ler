@@ -1,6 +1,4 @@
-import {LibrarySession} from './ui/LibrarySession';
-import {createCliRenderer} from '@opentui/core';
-import {render} from '@opentui/solid';
+import type {CliRenderer} from '@opentui/core';
 import {promises as fs} from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
@@ -28,10 +26,10 @@ async function main() {
   try{await migrateLegacyConfig(path.join(process.env.APPDATA??path.join(os.homedir(),'.config'),'leitor'),appDirectory);}catch(e:any){warning+=` ${label('Configuração antiga não migrada','Legacy configuration not migrated')}: ${e.message}`;}
   const state:State=persistence?.state??{version:1,books:{},tabs:[],lang:language};
   if(options.lang)state.lang=options.lang;
-  let opened:Book[]=[];let renderer:Awaited<ReturnType<typeof createCliRenderer>>|undefined;let exiting=false;
+  let opened:Book[]=[];let renderer:CliRenderer|undefined;let exiting=false;
   async function exit(){if(exiting)return;exiting=true;try{await persistence?.save();}finally{opened.forEach(book=>book.close());try{await persistence?.close();}finally{renderer?.destroy();}}}
   const interrupt=()=>void exit();process.on('SIGINT',interrupt);process.on('SIGTERM',interrupt);
-  try{renderer=await createCliRenderer({exitOnCtrlC:false,consoleOptions:{title:'Console · Esc/F12'}});renderer.setTerminalTitle('LER — Leitor Extremamente Reduzido');await render(()=><LibrarySession onSessionChange={session=>{persistence=session.persistence;opened=session.opened;}} root={root} appDirectory={appDirectory} state={state} initialFile={initialFile} warning={warning} persistence={persistence} opened={opened} exit={exit}/>,renderer);}
+  try{const {startInterface}=await import('./ui/start');await startInterface({onSessionChange:session=>{persistence=session.persistence;opened=session.opened;},root,appDirectory,state,initialFile,warning,persistence,opened,exit},value=>{renderer=value;});}
   catch(e){await exit();throw e;}
 }
 await main().catch(e=>{const hint=interfaceLanguage(process.argv.slice(2))==='pt-BR'?'Use LER --help para ver as opções.':'Use LER --help to see available options.';console.error(`LER: ${e.message}\n${hint}`);process.exitCode=1;});
