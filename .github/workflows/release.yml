@@ -40,12 +40,25 @@ jobs:
       - name: Build installer
         shell: powershell
         run: .\scripts\build-release.ps1 -DownloadCompiler
-      - name: Validate installation and removal with separate AppId
+      - name: Build validation installer with separate AppId
+        timeout-minutes: 5
         shell: powershell
-        run: |
-          .\scripts\build-release.ps1 -ValidationBuild
-          .\scripts\test-installer.ps1
-          .\scripts\test-installer.ps1 -Language english
+        run: .\scripts\build-release.ps1 -ValidationBuild
+      - name: Validate Portuguese installation and removal
+        timeout-minutes: 3
+        shell: powershell
+        run: .\scripts\test-installer.ps1
+      - name: Validate English installation and removal
+        timeout-minutes: 3
+        shell: powershell
+        run: .\scripts\test-installer.ps1 -Language english
+      - name: Preserve installer validation logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer-validation-logs
+          path: dist/installer-test-*/*.log
+          if-no-files-found: ignore
       - name: Prepare release notes
         shell: pwsh
         run: |
