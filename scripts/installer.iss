@@ -57,6 +57,12 @@ english.StartMenu=Add LER to the Start menu
 english.Desktop=Add a desktop shortcut
 english.Path=Make the LER command available in terminals
 english.Context=Add "Open with LER" for EPUB, PDF and TXT
+brazilianportuguese.OpenWith=Abrir com LER
+english.OpenWith=Open with LER
+brazilianportuguese.PathError=Não foi possível configurar o comando LER.
+english.PathError=Could not configure the LER command.
+brazilianportuguese.DirectoryError=Escolha uma pasta vazia e exclusiva para o LER.
+english.DirectoryError=Choose an empty folder dedicated to LER.
 brazilianportuguese.Maintenance=Manutenção do LER
 brazilianportuguese.MaintenanceDescription=O LER já está instalado neste computador.
 brazilianportuguese.MaintenancePrompt=Escolha o que deseja fazer:
@@ -93,11 +99,11 @@ Name: "{userprograms}\{#ShortcutName}"; Filename: "{app}\.ler\runtime\bun.exe"; 
 Name: "{userdesktop}\{#ShortcutName}"; Filename: "{app}\.ler\runtime\bun.exe"; Parameters: "--preload ""{app}\scripts\preload.ts"" ""{app}\src\main.tsx"""; WorkingDir: "{userdocs}"; IconFilename: "{app}\assets\ler.ico"; Check: ShouldCreateDesktopIcon
 
 [Registry]
-Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.epub\shell\LER.open"; ValueType: string; ValueData: "Abrir com LER"; Flags: uninsdeletekey; Tasks: contextmenu
+Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.epub\shell\LER.open"; ValueType: string; ValueData: "{cm:OpenWith}"; Flags: uninsdeletekey; Tasks: contextmenu
 Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.epub\shell\LER.open\command"; ValueType: string; ValueData: """{app}\.ler\runtime\bun.exe"" --preload ""{app}\scripts\preload.ts"" ""{app}\src\main.tsx"" --open ""%1"""; Tasks: contextmenu
-Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.pdf\shell\LER.open"; ValueType: string; ValueData: "Abrir com LER"; Flags: uninsdeletekey; Tasks: contextmenu
+Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.pdf\shell\LER.open"; ValueType: string; ValueData: "{cm:OpenWith}"; Flags: uninsdeletekey; Tasks: contextmenu
 Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.pdf\shell\LER.open\command"; ValueType: string; ValueData: """{app}\.ler\runtime\bun.exe"" --preload ""{app}\scripts\preload.ts"" ""{app}\src\main.tsx"" --open ""%1"""; Tasks: contextmenu
-Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.txt\shell\LER.open"; ValueType: string; ValueData: "Abrir com LER"; Flags: uninsdeletekey; Tasks: contextmenu
+Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.txt\shell\LER.open"; ValueType: string; ValueData: "{cm:OpenWith}"; Flags: uninsdeletekey; Tasks: contextmenu
 Root: HKCU; Subkey: "Software\Classes\SystemFileAssociations\.txt\shell\LER.open\command"; ValueType: string; ValueData: """{app}\.ler\runtime\bun.exe"" --preload ""{app}\scripts\preload.ts"" ""{app}\src\main.tsx"" --open ""%1"""; Tasks: contextmenu
 
 [UninstallDelete]
@@ -196,7 +202,7 @@ begin
     Value := PathWithout(Value, Entry);
     if Value <> '' then Value := ';' + Value;
     if not RegWriteExpandStringValue(HKCU, 'Environment', 'Path', Entry + Value) then
-      RaiseException('Nao foi possivel configurar o comando LER.');
+      RaiseException(CustomMessage('PathError'));
   end;
 end;
 
@@ -220,7 +226,7 @@ begin
       try
         repeat
           if (FindRec.Name <> '.') and (FindRec.Name <> '..') then begin
-            Result := 'Escolha uma pasta vazia e exclusiva para o LER.';
+            Result := CustomMessage('DirectoryError');
             Break;
           end;
         until not FindNext(FindRec);

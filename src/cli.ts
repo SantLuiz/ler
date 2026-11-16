@@ -27,20 +27,43 @@ export function libraryRoot(options:CliOptions,cwd:string,appDirectory:string) {
   const inside=relative===''||(!relative.startsWith('..'+path.sep)&&relative!=='..'&&!path.isAbsolute(relative));
   return inside?path.dirname(appDirectory):path.resolve(cwd);
 }
+export type Language = 'en' | 'pt-BR';
+export function interfaceLanguage(args: string[], locale = Intl.DateTimeFormat().resolvedOptions().locale): Language {
+  const index = args.indexOf('--lang');
+  const requested = index >= 0 ? args[index + 1] : undefined;
+  return requested === 'en' || requested === 'pt-BR' ? requested : locale.toLowerCase().startsWith('pt') ? 'pt-BR' : 'en';
+}
 export const HELP=`LER — Leitor Extremamente Reduzido
 
-  LER                       Abrir a pasta atual / Open current folder
-  LER "D:\\Livros"            Abrir outra biblioteca / Open another library
-  LER --choose              Abrir a home / Open home (compatibilidade / compatibility)
-  LER --open "livro.epub"    Abrir um arquivo / Open a book file
+  LER                       Open the home screen
+  LER "D:\\Books"             Open another library
+  LER --choose              Open home (compatibility option)
+  LER --open "book.epub"     Open a book file
 
-  --library <folder>        Pasta da biblioteca / Library directory
-  --open <file>             Abrir EPUB, TXT ou PDF / Open EPUB, TXT or PDF
-  --lang <en|pt-BR>         Idioma / Interface language
-  --check                   Validar pasta sem abrir a interface / Check library
-  --version                 Mostrar versão / Show version
-  --help                    Mostrar ajuda / Show help
+  --library <folder>        Library directory
+  --open <file>             Open EPUB, TXT or PDF
+  --lang <en|pt-BR>          Interface language
+  --check                   Check the library without opening the interface
+  --version                 Show version
+  --help                    Show help
 
-Dentro do repositorio, a pasta pai e usada como biblioteca.
 Inside the cloned repository, its parent is used as the library.
+Choose a library inside LER with Ctrl+L on the home screen.
 `;
+export function helpText(lang: Language) { return lang === 'en' ? HELP : `LER — Leitor Extremamente Reduzido
+
+  LER                       Abrir a tela inicial
+  LER "D:\\Livros"            Abrir outra biblioteca
+  LER --choose              Abrir a home (opção de compatibilidade)
+  LER --open "livro.epub"    Abrir um arquivo
+
+  --library <folder>        Pasta da biblioteca
+  --open <file>             Abrir EPUB, TXT ou PDF
+  --lang <en|pt-BR>          Idioma da interface
+  --check                   Validar pasta sem abrir a interface
+  --version                 Mostrar versão
+  --help                    Mostrar ajuda
+
+Dentro do repositório, a pasta pai é usada como biblioteca.
+Escolha uma biblioteca dentro do LER com Ctrl+L na tela inicial.
+`; }

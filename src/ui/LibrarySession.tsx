@@ -17,8 +17,8 @@ export function LibrarySession(props:Parameters<typeof App>[0]&{onSessionChange:
   async function changeLibrary(value:string){
     const next=await fs.realpath(path.resolve(value));
     if((process.platform==='win32'?next.toLowerCase():next)===(process.platform==='win32'?root().toLowerCase():root()))return;
-    if(changing)throw new Error('Aguarde a troca de biblioteca / Please wait for library switch');
-    if(!(await fs.stat(next)).isDirectory())throw new Error('Selecione uma pasta / Select a directory');
+    if(changing)throw new Error(workspace.state.lang==='pt-BR'?'Aguarde a troca de biblioteca':'Please wait for library switch');
+    if(!(await fs.stat(next)).isDirectory())throw new Error(workspace.state.lang==='pt-BR'?'Selecione uma pasta':'Select a directory');
     changing=true;
     try {const result=await workspace.select(next);if(disposed)return;setRoot(result.root);publish();void recordLibraryVisit(next,appDirectory).catch(()=>{});return result;}finally{changing=false;}
   }

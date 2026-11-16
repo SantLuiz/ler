@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([string]$InstallerPath)
+param([string]$InstallerPath, [ValidateSet('brazilianportuguese', 'english')][string]$Language = 'brazilianportuguese')
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path -Parent $PSScriptRoot
 $version = (Get-Content -LiteralPath (Join-Path $repo 'package.json') -Raw | ConvertFrom-Json).version
@@ -23,7 +23,13 @@ try {
     # Do not alter existing shortcuts or context menus; exercise user PATH and
     # native installed-app registration, which the uninstaller must undo exactly.
     $env:Path = "$env:SystemRoot\System32;$env:SystemRoot\System32\WindowsPowerShell\v1.0"
-    Invoke-InstallerProcess $InstallerPath ('/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /LANG=brazilianportuguese /TASKS="addtopath" /DIR="{0}" /LOG="{1}\install.log"' -f $target, $fixture)
+    Invoke-InstallerProcess $InstallerPath ('/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /LANG={2} /TASKS="addtopath" /DIR="{0}" /LOG="{1}\install.log"' -f $target, $fixture, $Language)
+    $installedBun = Join-Path $target '.ler\runtime\bun.exe'
+    $helpLanguage = if ($Language -eq 'english') { 'en' } else { 'pt-BR' }
+    $help = & $installedBun --preload (Join-Path $target 'scripts\preload.ts') (Join-Path $target 'src\main.tsx') --lang $helpLanguage --help
+    $expectedHelp = if ($Language -eq 'english') { 'Show help' } else { 'Mostrar ajuda' }
+    if ($LASTEXITCODE -ne 0 -or ($help -join "`n") -notlike "*$expectedHelp*") { throw 'Installed command-line help did not use the requested language.' }
+    if (-not (Test-Path -LiteralPath (Join-Path $target 'README.md')) -or -not (Test-Path -LiteralPath (Join-Path $target 'LEIA-ME.md'))) { throw 'Both installed reading guides must be present.' }
     if (-not (Test-Path -LiteralPath $key)) { throw 'Registro em Aplicativos instalados ausente.' }
     if ((Get-ItemProperty -LiteralPath $key).InstallLocation.TrimEnd('\') -ine $target) { throw 'Pasta registrada incorretamente.' }
     if ((Get-ItemProperty -LiteralPath $key).DisplayIcon -notlike '*\assets\ler.ico*') { throw 'Icone do aplicativo instalado incorreto.' }
@@ -57,7 +63,7 @@ try {
     $legacyShortcut.Arguments = '--choose'
     $legacyShortcut.Save()
     # Updating with the same wizard must retain reading state.
-    Invoke-InstallerProcess $InstallerPath ('/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /LANG=brazilianportuguese /TASKS="addtopath" /DIR="{0}" /LOG="{1}\update.log"' -f $target, $fixture)
+    Invoke-InstallerProcess $InstallerPath ('/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /LANG={2} /TASKS="addtopath" /DIR="{0}" /LOG="{1}\update.log"' -f $target, $fixture, $Language)
     if ((Get-Content -LiteralPath (Join-Path $target '.ler\libraries\fixture\progress.json') -Raw).Trim() -ne '{"progress":42}') { throw 'Atualizacao apagou dados de leitura.' }
     $updatedShortcut = $shortcutShell.CreateShortcut($legacyShortcutPath)
     if ($updatedShortcut.Arguments -like '*--choose*' -or $updatedShortcut.IconLocation -notlike '*\assets\ler.ico*') { throw 'Atalho legado nao atualizado.' }

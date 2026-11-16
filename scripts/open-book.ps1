@@ -4,7 +4,7 @@ $ErrorActionPreference = 'Stop'
 try {
     $repo = Split-Path -Parent $PSScriptRoot
     $file = Get-Item -LiteralPath $BookPath
-    if ($file.PSIsContainer -or $file.Extension.ToLowerInvariant() -notin @('.epub', '.pdf', '.txt')) { throw 'Selecione um arquivo EPUB, PDF ou TXT.' }
+    if ($file.PSIsContainer -or $file.Extension.ToLowerInvariant() -notin @('.epub', '.pdf', '.txt')) { throw 'Select an EPUB, PDF or TXT file.' }
     $runtime = Join-Path $repo '.ler\runtime\bun.exe'
     if (-not (Test-Path -LiteralPath $runtime)) { $runtime = Join-Path $repo 'node_modules\bun\bin\bun.exe' }
     if (-not (Test-Path -LiteralPath $runtime)) { $runtime = (Get-Command bun -ErrorAction Stop).Source }
@@ -23,5 +23,5 @@ try {
     Write-Host ('LER: ' + $_.Exception.Message)
     $result = 1
 }
-if ($result -ne 0 -and -not $Check) { Read-Host 'Pressione Enter para fechar' | Out-Null }
+if ($result -ne 0 -and -not $Check) { Read-Host 'Press Enter to close' | Out-Null }
 exit $result

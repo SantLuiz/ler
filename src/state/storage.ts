@@ -38,7 +38,7 @@ async function migrateLegacy(root:string,dir:string) {
   let info;try{info=await fs.lstat(source);}catch(e:any){if(e.code==='ENOENT')return;throw e;}
   if(!info.isDirectory()||info.isSymbolicLink())return;
   const oldLock=path.join(source,'lock');
-  if(await exists(oldLock)){const pid=Number(await fs.readFile(oldLock,'utf8'));if(Number.isInteger(pid)&&pid>0){try{process.kill(pid,0);throw new Error('Library already open / Feche a versão anterior do LER antes de migrar.');}catch(e:any){if(e.code!=='ESRCH')throw e;}}}
+  if(await exists(oldLock)){const pid=Number(await fs.readFile(oldLock,'utf8'));if(Number.isInteger(pid)&&pid>0){try{process.kill(pid,0);throw new Error('Library already open. Close the previous LER version before migrating.');}catch(e:any){if(e.code!=='ESRCH')throw e;}}}
   const files=(await fs.readdir(source,{withFileTypes:true})).filter(e=>e.isFile()&&/^state\.json(?:\.bak|\.tmp|\.corrupt-\d+|\.bak\.corrupt-\d+)?$/.test(e.name)).map(e=>e.name);
   if(!files.length)return;
   await fs.writeFile(pending,JSON.stringify({source}));
@@ -53,7 +53,7 @@ export async function store(root: string,appDirectory=path.resolve(import.meta.d
   const dir = storageDirectory(root,appDirectory); await fs.mkdir(dir, { recursive: true });
   const lock = path.join(dir, 'lock');
   try { const handle = await fs.open(lock, 'wx'); await handle.writeFile(String(process.pid)); await handle.close(); }
-  catch { const pid = Number(await fs.readFile(lock, 'utf8')); try { process.kill(pid, 0); throw new Error('Library already open / Biblioteca já aberta'); } catch (e: any) { if (e.code !== 'ESRCH') throw e; } await fs.unlink(lock); return store(root,appDirectory); }
+  catch { const pid = Number(await fs.readFile(lock, 'utf8')); try { process.kill(pid, 0); throw new Error('Library already open'); } catch (e: any) { if (e.code !== 'ESRCH') throw e; } await fs.unlink(lock); return store(root,appDirectory); }
   try {
   await migrateLegacy(root,dir);
   await fs.writeFile(path.join(dir,'library.json'),JSON.stringify({relativeToApp:path.relative(path.resolve(appDirectory),path.resolve(root))||'.'},null,2));

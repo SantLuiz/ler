@@ -10,18 +10,18 @@ if (-not (Test-Path -LiteralPath $CompilerPath) -and $DownloadCompiler) {
     $download = Join-Path $tools 'innosetup-7.1.1-x64.exe'
     Invoke-WebRequest -UseBasicParsing -Uri 'https://github.com/jrsoftware/issrc/releases/download/is-7_1_1/innosetup-7.1.1-x64.exe' -OutFile $download
     $signature = Get-AuthenticodeSignature -LiteralPath $download
-    if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Subject -notmatch 'O=Pyrsys B\.V\.') { throw 'Assinatura do compilador Inno Setup invalida.' }
+    if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Subject -notmatch 'O=Pyrsys B\.V\.') { throw 'Invalid Inno Setup compiler signature.' }
     # Portable build tool: no shortcuts, associations, PATH or installed-app entry.
     $process = Start-Process -FilePath $download -ArgumentList ('/PORTABLE=1 /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /CURRENTUSER /NOICONS /DIR="{0}"' -f (Join-Path $tools 'inno')) -Wait -PassThru -WindowStyle Hidden
-    if ($process.ExitCode -ne 0) { throw "Falha ao extrair compilador: $($process.ExitCode)" }
+    if ($process.ExitCode -ne 0) { throw "Failed to extract compiler: $($process.ExitCode)" }
 }
-if (-not (Test-Path -LiteralPath $CompilerPath)) { throw 'Use -DownloadCompiler ou -CompilerPath para indicar ISCC.exe (somente na maquina de build).' }
+if (-not (Test-Path -LiteralPath $CompilerPath)) { throw 'Use -DownloadCompiler or -CompilerPath to locate ISCC.exe (build machine only).' }
 $bun = @((Join-Path $repo '.ler\runtime\bun.exe'), (Join-Path $repo 'node_modules\bun\bin\bun.exe'), (Get-Command bun -ErrorAction SilentlyContinue).Source) |
     Where-Object { $_ -and (Test-Path -LiteralPath $_) } | Select-Object -First 1
-if (-not $bun) { throw 'A maquina de build precisa de Bun. O usuario final nao precisa instalar ferramentas.' }
-if ((& $bun --print process.platform) -ne 'win32' -or (& $bun --print process.arch) -ne 'x64') { throw 'Gere o instalador com Bun Windows x64.' }
+if (-not $bun) { throw 'The build machine requires Bun. End users do not need to install tools.' }
+if ((& $bun --print process.platform) -ne 'win32' -or (& $bun --print process.arch) -ne 'x64') { throw 'Build the installer with Windows x64 Bun.' }
 & $bun (Join-Path $PSScriptRoot 'generate-icon.ts')
-if ($LASTEXITCODE -ne 0) { throw 'Falha ao gerar o icone do LER.' }
+if ($LASTEXITCODE -ne 0) { throw 'Failed to generate the LER icon.' }
 $dist = Join-Path $repo 'dist'
 $work = Join-Path $dist ([guid]::NewGuid().ToString('N'))
 $app = Join-Path $work 'payload'
@@ -34,6 +34,7 @@ try {
     New-Item -ItemType Directory -Path $scripts | Out-Null
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'preload.ts') -Destination $scripts
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'release-readme.md') -Destination (Join-Path $app 'LEIA-ME.md')
+    Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'release-readme.en.md') -Destination (Join-Path $app 'README.md')
     $runtime = Join-Path $app '.ler\runtime'
     New-Item -ItemType Directory -Path $runtime -Force | Out-Null
     Copy-Item -LiteralPath $bun -Destination (Join-Path $runtime 'bun.exe')
@@ -44,7 +45,7 @@ try {
         Push-Location -LiteralPath $app
         try {
             & $bun install --frozen-lockfile --production --omit=peer
-            if ($LASTEXITCODE -ne 0) { throw 'Falha ao preparar dependencias de producao.' }
+            if ($LASTEXITCODE -ne 0) { throw 'Failed to prepare production dependencies.' }
         } finally { Pop-Location }
     } finally { $env:BUN_INSTALL_CACHE_DIR = $originalCache }
     # Validate with only Windows commands on PATH.
@@ -52,25 +53,25 @@ try {
     try {
         $env:Path = "$env:SystemRoot\System32;$env:SystemRoot\System32\WindowsPowerShell\v1.0"
         & (Join-Path $app 'bin\ler.cmd') --check
-        if ($LASTEXITCODE -ne 0) { throw 'O pacote nao inicia sem ferramentas externas.' }
+        if ($LASTEXITCODE -ne 0) { throw 'The package does not start without external tools.' }
     } finally { $env:Path = $originalPath }
     # Ship only the runtime in .ler, never caches or private reading data.
     foreach ($name in @('tmp', 'cache', 'config')) {
         $disposable = [IO.Path]::GetFullPath((Join-Path $app ".ler\$name"))
-        if (-not $disposable.StartsWith([IO.Path]::GetFullPath($work) + '\', [StringComparison]::OrdinalIgnoreCase)) { throw 'Cache fora do build.' }
+        if (-not $disposable.StartsWith([IO.Path]::GetFullPath($work) + '\', [StringComparison]::OrdinalIgnoreCase)) { throw 'Cache is outside the build folder.' }
         if (Test-Path -LiteralPath $disposable) { Remove-Item -LiteralPath $disposable -Recurse -Force }
     }
     $validationArguments = @()
     if ($ValidationBuild) { $validationArguments = @('/DValidationBuild=1') }
     & $CompilerPath /Q "/DPayloadDir=$app" "/DAppVersion=$($manifest.version)" "/DOutputDir=$dist" @validationArguments (Join-Path $PSScriptRoot 'installer.iss')
-    if ($LASTEXITCODE -ne 0) { throw 'Falha ao compilar instalador grafico.' }
+    if ($LASTEXITCODE -ne 0) { throw 'Failed to compile graphical installer.' }
     $suffix = if ($ValidationBuild) { '-validation' } else { '' }
     $installer = Join-Path $dist ("LER-{0}-Setup-x64{1}.exe" -f $manifest.version, $suffix)
     $hash = (Get-FileHash -LiteralPath $installer -Algorithm SHA256).Hash.ToLowerInvariant()
     "$hash  $([IO.Path]::GetFileName($installer))" | Set-Content -LiteralPath "$installer.sha256" -Encoding ascii
-    Write-Host "Instalador pronto: $installer"
+    Write-Host "Installer ready: $installer"
 } finally {
     $resolvedWork = [IO.Path]::GetFullPath($work)
-    if (-not $resolvedWork.StartsWith([IO.Path]::GetFullPath($dist) + '\', [StringComparison]::OrdinalIgnoreCase)) { throw 'Pasta de build fora de dist.' }
+    if (-not $resolvedWork.StartsWith([IO.Path]::GetFullPath($dist) + '\', [StringComparison]::OrdinalIgnoreCase)) { throw 'Build folder is outside dist.' }
     if (Test-Path -LiteralPath $resolvedWork) { Remove-Item -LiteralPath $resolvedWork -Recurse -Force }
 }

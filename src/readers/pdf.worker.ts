@@ -13,16 +13,16 @@ self.onmessage = (event: MessageEvent<{id:number; filename?:string; page?:number
         library = await PDFiumLibrary.init();
         document = await library.loadDocument(await fs.readFile(filename));
         const pages = document.getPageCount();
-        if (pages < 1 || pages > 20000) throw new Error('PDF sem páginas ou excede 20 mil páginas / Invalid PDF page count');
+        if (pages < 1 || pages > 20000) throw new Error('Invalid PDF page count');
         self.postMessage({id, pages});
       } else {
-        if (!document || page === undefined || !Number.isInteger(page) || page < 0 || page >= document.getPageCount()) throw new Error('Página PDF inválida / Invalid PDF page');
+        if (!document || page === undefined || !Number.isInteger(page) || page < 0 || page >= document.getPageCount()) throw new Error('Invalid PDF page');
         let bytes = raw?undefined:cache.get(page);
         if (!bytes) {
           const current = document.getPage(page);
           try {
             const {originalWidth:w, originalHeight:h} = current.getOriginalSize();
-            if (!(w > 0 && h > 0 && Number.isFinite(w*h))) throw new Error('Dimensões PDF inválidas / Invalid PDF dimensions');
+            if (!(w > 0 && h > 0 && Number.isFinite(w*h))) throw new Error('Invalid PDF dimensions');
             // Limit bitmap memory even for posters and unusually large pages.
             const scale = Math.min(3, 3000 / Math.max(w,h), Math.sqrt(4_000_000 / (w*h)));
             const image = await current.render({scale, colorSpace:'RGBA', transparent:false, renderFormFields:true});

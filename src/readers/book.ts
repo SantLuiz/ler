@@ -40,10 +40,10 @@ export function blocksFromHtml(html: string, href: string, targets: Record<strin
 }
 export async function openBook(filename: string): Promise<Book> {
   const format = bookFormat(filename);
-  if (!format) throw new Error('Formato não suportado / Unsupported format: EPUB, TXT, PDF');
+  if (!format) throw new Error('Unsupported format: EPUB, TXT, PDF');
   if(format!=='epub') {
     const limit=(format==='pdf'?256:64)*1024*1024;
-    if((await fs.stat(filename)).size>limit)throw new Error(`${format.toUpperCase()} excede / exceeds ${limit/1024/1024} MiB`);
+    if((await fs.stat(filename)).size>limit)throw new Error(`${format.toUpperCase()} exceeds ${limit/1024/1024} MiB`);
   }
   const hash = createHash('sha256'); for await (const chunk of createReadStream(filename)) hash.update(chunk);
   const id = hash.digest('hex');
@@ -55,7 +55,7 @@ export async function openBook(filename: string): Promise<Book> {
     await new Promise<void>((resolve, reject) => { zip.on('error', reject); zip.on('entry', e => { entries.set(e.fileName, e); if (entries.size > 20000) { reject(new Error('Too many ZIP entries')); return; } zip.readEntry(); }); zip.on('end', resolve); zip.readEntry(); });
     const encrypted = new Set<string>();
     const resource = async (href: string) => {
-      if (encrypted.has(href)) throw new Error(`Recurso criptografado não suportado / Encrypted resource is unsupported: ${href}`);
+      if (encrypted.has(href)) throw new Error(`Encrypted resource is unsupported: ${href}`);
       const entry = entries.get(href); if (!entry) throw new Error(`Missing resource: ${href}`);
       if (entry.uncompressedSize > 32 * 1024 * 1024) throw new Error('Resource exceeds 32 MiB');
       const stream = await new Promise<NodeJS.ReadableStream>((resolve, reject) => zip.openReadStream(entry, (e, s) => e ? reject(e) : resolve(s!)));

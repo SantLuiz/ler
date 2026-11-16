@@ -18,7 +18,8 @@ function Set-LerContextMenu([string]$Repo, [bool]$Uninstall = $false) {
             }
         } else {
             New-Item -Path ($entry.Key + '\command') -Force | Out-Null
-            Set-Item -LiteralPath $entry.Key -Value 'Abrir com LER'
+            $menuLabel = if ([Globalization.CultureInfo]::CurrentUICulture.Name -like 'pt*') { 'Abrir com LER' } else { 'Open with LER' }
+            Set-Item -LiteralPath $entry.Key -Value $menuLabel
             New-ItemProperty -LiteralPath $entry.Key -Name InstallDirectory -Value $entry.Owner -PropertyType String -Force | Out-Null
             New-ItemProperty -LiteralPath $entry.Key -Name MultiSelectModel -Value 'Single' -PropertyType String -Force | Out-Null
             Set-Item -LiteralPath ($entry.Key + '\command') -Value $entry.Command

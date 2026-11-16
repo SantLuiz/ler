@@ -6,30 +6,32 @@ import path from 'node:path';
 import os from 'node:os';
 import type {Book} from './readers/book';
 import {store,storageDirectory,knownLibraryRoot,migrateLegacyConfig,type State} from './state/storage';
-import {parseArgs,libraryRoot,HELP,VERSION} from './cli';
+import {parseArgs,libraryRoot,helpText,interfaceLanguage,VERSION} from './cli';
 import {bookFormat} from './readers/formats';
 import {requestBookOpen} from './state/open-requests';
 
 async function main() {
   const options=parseArgs(process.argv.slice(2));
-  if(options.help){console.log(HELP);return;}
+  const language=interfaceLanguage(process.argv.slice(2));
+  const label=(pt:string,en:string)=>language==='pt-BR'?pt:en;
+  if(options.help){console.log(helpText(language));return;}
   if(options.version){console.log(`LER ${VERSION}`);return;}
   const appDirectory=path.resolve(import.meta.dir,'..');
   const initialFile=options.open?path.resolve(options.open):undefined;
-  if(initialFile&&(!bookFormat(initialFile)||!(await fs.stat(initialFile)).isFile()))throw new Error('Arquivo inválido: use EPUB, TXT ou PDF / Invalid book file');
+  if(initialFile&&(!bookFormat(initialFile)||!(await fs.stat(initialFile)).isFile()))throw new Error(label('Arquivo inválido: use EPUB, TXT ou PDF','Invalid book file: use EPUB, TXT or PDF'));
   let root=libraryRoot(options,process.cwd(),appDirectory);
   if(initialFile&&!options.library&&!options.choose)root=await knownLibraryRoot(initialFile,appDirectory)??root;
-  if(!(await fs.stat(root)).isDirectory())throw new Error(`Not a directory / Não é uma pasta: ${root}`);
+  if(!(await fs.stat(root)).isDirectory())throw new Error(`${label('Não é uma pasta','Not a directory')}: ${root}`);
   if(options.check){console.log(JSON.stringify({name:'LER',version:VERSION,library:root,runtime:Bun.version,...(initialFile?{file:initialFile}:{})}));return;}
   let persistence:Awaited<ReturnType<typeof store>>|undefined;let warning='';
-  try{persistence=await store(root,appDirectory);}catch(e:any){if(e.message.includes('already open')){if(initialFile){await requestBookOpen(storageDirectory(root,appDirectory),initialFile);console.log('Arquivo enviado ao LER aberto / Sent file to the running LER');return;}throw e;}warning=`Não foi possível salvar em LER/.ler / Cannot save to LER/.ler: ${e.message}`;}
-  try{await migrateLegacyConfig(path.join(process.env.APPDATA??path.join(os.homedir(),'.config'),'leitor'),appDirectory);}catch(e:any){warning+=` Configuração antiga não migrada / Legacy configuration not migrated: ${e.message}`;}
-  const state:State=persistence?.state??{version:1,books:{},tabs:[],lang:Intl.DateTimeFormat().resolvedOptions().locale.startsWith('pt')?'pt-BR':'en'};
+  try{persistence=await store(root,appDirectory);}catch(e:any){if(e.message.includes('already open')){if(initialFile){await requestBookOpen(storageDirectory(root,appDirectory),initialFile);console.log(label('Arquivo enviado ao LER aberto','Sent file to the running LER'));return;}throw e;}warning=`${label('Não foi possível salvar em LER/.ler','Cannot save to LER/.ler')}: ${e.message}`;}
+  try{await migrateLegacyConfig(path.join(process.env.APPDATA??path.join(os.homedir(),'.config'),'leitor'),appDirectory);}catch(e:any){warning+=` ${label('Configuração antiga não migrada','Legacy configuration not migrated')}: ${e.message}`;}
+  const state:State=persistence?.state??{version:1,books:{},tabs:[],lang:language};
   if(options.lang)state.lang=options.lang;
   let opened:Book[]=[];let renderer:Awaited<ReturnType<typeof createCliRenderer>>|undefined;let exiting=false;
   async function exit(){if(exiting)return;exiting=true;try{await persistence?.save();}finally{opened.forEach(book=>book.close());try{await persistence?.close();}finally{renderer?.destroy();}}}
   const interrupt=()=>void exit();process.on('SIGINT',interrupt);process.on('SIGTERM',interrupt);
-  try{renderer=await createCliRenderer({exitOnCtrlC:false,consoleOptions:{title:'Console · Esc/F12: fechar / close'}});renderer.setTerminalTitle('LER — Leitor Extremamente Reduzido');await render(()=><LibrarySession onSessionChange={session=>{persistence=session.persistence;opened=session.opened;}} root={root} appDirectory={appDirectory} state={state} initialFile={initialFile} warning={warning} persistence={persistence} opened={opened} exit={exit}/>,renderer);}
+  try{renderer=await createCliRenderer({exitOnCtrlC:false,consoleOptions:{title:'Console · Esc/F12'}});renderer.setTerminalTitle('LER — Leitor Extremamente Reduzido');await render(()=><LibrarySession onSessionChange={session=>{persistence=session.persistence;opened=session.opened;}} root={root} appDirectory={appDirectory} state={state} initialFile={initialFile} warning={warning} persistence={persistence} opened={opened} exit={exit}/>,renderer);}
   catch(e){await exit();throw e;}
 }
-await main().catch(e=>{console.error(`LER: ${e.message}\nUse LER --help para ver as opções.`);process.exitCode=1;});
+await main().catch(e=>{const hint=interfaceLanguage(process.argv.slice(2))==='pt-BR'?'Use LER --help para ver as opções.':'Use LER --help to see available options.';console.error(`LER: ${e.message}\n${hint}`);process.exitCode=1;});

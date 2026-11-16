@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101114">
+  <meta name="description" content="LER: an extremely minimal reader. Read EPUB, TXT and PDF in your terminal, with a local library, highlights and saved progress. Download for Windows or clone the project.">
+  <title>LER — An extremely minimal reader</title>
+  <link rel="alternate" hreflang="pt-BR" href="https://santluiz.github.io/ler/">
+  <link rel="alternate" hreflang="en" href="https://santluiz.github.io/ler/en/">
+  <link rel="icon" href="../assets/ler.png">
+  <link rel="stylesheet" href="../style.css">
+  <script src="../main.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#conteudo">Skip to content</a>
+  <header class="shell header">
+    <a class="wordmark" href="#" aria-label="LER, home">LER<span> ▪</span></a>
+    <nav aria-label="Main navigation"><a href="#projeto">The project</a><a href="#instalar">Install</a><a href="#usar">How to use</a><a href="https://github.com/SantLuiz/ler">GitHub ↗</a></nav>
+    <div class="language-switch" role="group" aria-label="Language"><a href="../" lang="pt-BR" hreflang="pt-BR">PT</a><a href="./" lang="en" hreflang="en" aria-current="page">EN</a></div>
+  </header>
+  <main id="conteudo">
+    <section class="hero shell">
+      <div class="eyebrow"><span class="light"></span> EPUB · TXT · PDF / IN YOUR TERMINAL</div>
+      <img class="pixel-logo" src="../assets/logo.svg" alt="LER" width="580" height="200">
+      <p class="subtitle">An extremely minimal reader</p>
+      <h1>Less interface.<br>One more page.</h1>
+      <p class="intro">Your books, your keyboard and a quiet place to read.<br class="desktop"> A local library that remembers where you left off.</p>
+      <div class="actions"><a class="button primary" data-download href="https://github.com/SantLuiz/ler/releases/latest">↓ Download for Windows</a><a class="button" href="#codigo">&lt;/&gt; Clone repository</a></div>
+      <p class="fine" id="release-info" aria-live="polite">Windows x64 · Graphical installer · MIT license</p>
+      <a class="quiet-link" href="https://github.com/SantLuiz/ler/releases">All releases and checksums ↗</a>
+      <div class="terminal" aria-label="Illustrative demonstration of the LER interface">
+        <div class="terminal-bar"><span>LER / library</span><span>EPUB · TXT · PDF</span></div>
+        <div class="terminal-body"><div class="terminal-path">~/Documents/Library <span>Ctrl+L</span></div><div class="search">&gt; <span>Search for a book, title or author</span><span class="cursor">▌</span></div><div class="book selected"><span>› Dom Casmurro</span><span>Machado de Assis · EPUB</span></div><div class="book"><span>  Selected poems</span><span>TXT</span></div><div class="book"><span>  Study notebook</span><span>PDF</span></div><div class="terminal-help">Enter open <span>Tab options</span><span>Ctrl+L library</span></div></div>
+      </div>
+      <p class="caption">An illustration of the library. Your files stay on your computer.</p>
+    </section>
+    <section id="projeto" class="shell section">
+      <div class="section-title"><span class="index">01 / THE PROJECT</span><h2>Everything you need to keep reading.</h2></div>
+      <div class="features"><article><span class="symbol">[ local ]</span><h3>Your library is a folder.</h3><p>Open your EPUBs, TXTs and PDFs, search by name and organize them into subfolders. No accounts, book uploads or telemetry.</p></article><article><span class="symbol">[ resume ]</span><h3>One book can wait for another.</h3><p>Switch between tabs, bookmark pages and resume from your saved position. In EPUBs and TXTs, select passages and save highlights.</p></article><article><span class="symbol">[ at your pace ]</span><h3>Keys within reach. Time in view.</h3><p>Navigate with shortcuts, track statistics and estimated reading time. Choose your palette and read in English or Portuguese.</p></article></div>
+    </section>
+    <section id="instalar" class="shell section install">
+      <div class="section-title"><span class="index">02 / INSTALL</span><h2>From download to your first read.</h2><p>The installer includes the runtime and dependencies. You do not need to install Git, Node.js or Bun to use LER.</p><a class="button primary" data-download href="https://github.com/SantLuiz/ler/releases/latest">↓ Download installer · Windows x64</a></div>
+      <ol class="steps"><li><h3>Download and open the installer.</h3><p>Choose <code>LER-…-Setup-x64.exe</code> on GitHub Releases and follow the wizard. Installation works offline and requires no administrator access.</p></li><li><h3>Choose where to install.</h3><p>Select a folder and integrations: shortcuts, the <code>LER</code> terminal command and “Open with LER” in File Explorer. Keep your books outside the application folder.</p></li><li><h3>Open LER and choose your books.</h3><p>Use the Start menu or a shortcut. On the home screen, press <kbd>Ctrl</kbd> + <kbd>L</kbd> to select your library, then confirm with “Use this folder”.</p></li></ol>
+    </section>
+    <section id="usar" class="shell section">
+      <div class="section-title"><span class="index">03 / HOW TO USE</span><h2>Find. Open. Keep going.</h2><p>In your library, type a name and press <kbd>Enter</kbd>. While reading, these shortcuts will get you started.</p></div>
+      <div class="shortcut-grid"><div><kbd>↑ ↓</kbd><kbd>PgUp / PgDn</kbd><span>Navigate while reading</span></div><div><kbd>F6</kbd><span>Switch between open books</span></div><div><kbd>b</kbd><span>Bookmark the current position</span></div><div><kbd>v</kbd><kbd>Shift + arrows</kbd><span>Select text in EPUB / TXT</span></div><div><kbd>Ctrl + S</kbd><span>Save the selection as a highlight</span></div><div><kbd>F7</kbd><kbd>F8</kbd><span>Open highlights / statistics</span></div><div><kbd>+ − 0</kbd><span>Zoom and fit PDF pages</span></div><div><kbd>/</kbd><kbd>F2</kbd><span>Open the command list</span></div></div>
+      <p class="tip">Appearance and palettes: <kbd>F3</kbd>. To switch libraries, use <kbd>Ctrl + L</kbd> on home. To save and quit, <kbd>Ctrl + C</kbd>.</p><a class="quiet-link" href="https://github.com/SantLuiz/ler/blob/main/docs/commands.md">Browse all commands ↗</a>
+    </section>
+    <section id="codigo" class="shell section source">
+      <div class="section-title"><span class="index">04 / OPEN SOURCE</span><h2>Prefer to open the code?</h2><p>Clone the repository to explore, adapt or contribute. To install from source on Windows, you need Git and Bun 1.4.4+ or Node.js with npm.</p></div>
+      <div class="code-box"><div class="code-heading"><span>PowerShell</span><button id="copy" type="button" hidden>Copy commands</button></div><pre><code id="clone-command">git clone https://github.com/SantLuiz/ler.git
+cd ler
+.\scripts\install.cmd</code></pre><p id="copy-status" class="fine" role="status"></p></div>
+      <div class="source-links"><a class="quiet-link" href="https://github.com/SantLuiz/ler">Explore repository ↗</a><a class="quiet-link" href="https://github.com/SantLuiz/ler/blob/main/docs/development.md">Development guide ↗</a><a class="quiet-link" href="https://github.com/SantLuiz/ler/issues">Report an issue ↗</a></div>
+    </section>
+    <section class="shell section notes"><span class="index">BEFORE YOU START</span><div><h3>Update without losing your place</h3><p>Close LER and run the new installer in the same folder. Your data in <code>.ler</code> is preserved during updates. Back up this folder to keep your progress and highlights safe.</p></div><div><h3>Formats and limitations</h3><p>EPUB and TXT use reflowed text. PDFs are displayed as images, without text search, selection or OCR. DRM, passwords and fixed-layout EPUBs are unsupported. Use a terminal with at least 60 columns and 20 rows.</p></div></section>
+  </main>
+  <footer class="shell"><a class="wordmark" href="#">LER<span> ▪</span></a><p>An extremely minimal reader.<br>An open project for reading at your own pace.</p><a href="https://github.com/SantLuiz/ler/blob/main/LICENSE">MIT license ↗</a></footer>
+</body>
+</html>

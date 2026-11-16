@@ -19,6 +19,7 @@ jobs:
         run: |
           .\scripts\build-release.ps1 -ValidationBuild
           .\scripts\test-installer.ps1
+          .\scripts\test-installer.ps1 -Language english
       - uses: actions/upload-artifact@v4
         with:
           name: LER-windows-x64

@@ -2,6 +2,8 @@
 
 O site está em `site/`. O build (`bun scripts/build-site.ts`) gera `dist/site/` e deriva o logo de `src/ui/logo.ts`, sem dependências de frontend. A página usa links relativos, funciona sob `/ler/` e mantém links para Releases mesmo sem JavaScript. Quando a API pública do GitHub está disponível, o botão passa a apontar diretamente para o instalador da última release estável.
 
+A versão em português fica em `site/index.html` (`/ler/`) e a inglesa em `site/en/index.html` (`/ler/en/`). Mantenha as duas páginas atualizadas ao alterar o conteúdo. O seletor PT/EN usa links comuns e funciona sem JavaScript. Mensagens de cópia e dados da release seguem o atributo `lang` da página. Consulte a [auditoria de idiomas](language-audit.md).
+
 ## Ativar o GitHub Pages
 
 Em **Settings → Pages → Build and deployment → Source**, selecione **GitHub Actions**. Envie os arquivos para `main`: o workflow `pages.yml` compila e publica o site. Também é possível executar **Actions → GitHub Pages → Run workflow**. Endereço esperado: https://santluiz.github.io/ler/.

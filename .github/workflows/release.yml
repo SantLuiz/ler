@@ -45,10 +45,11 @@ jobs:
         run: |
           .\scripts\build-release.ps1 -ValidationBuild
           .\scripts\test-installer.ps1
+          .\scripts\test-installer.ps1 -Language english
       - name: Prepare release notes
         shell: pwsh
         run: |
-          Copy-Item scripts/release-readme.md dist/release-notes.md
+          @((Get-Content scripts/release-readme.en.md -Raw), '---', (Get-Content scripts/release-readme.md -Raw)) | Set-Content dist/release-notes.md -Encoding utf8
       - name: Create draft and upload verified assets
         shell: pwsh
         run: |

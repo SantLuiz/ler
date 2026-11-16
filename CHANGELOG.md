@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1.2 — 2026-11-15
+
+- Add a complete English website at `/en/` and a Portuguese/English language switch that works without JavaScript.
+- Localize download metadata, clipboard messages, command-line help and startup messages.
+- Translate Explorer menu labels and installer errors using the selected installation language; include both English and Portuguese reading guides and release notes.
+- Standardize internal reader/storage diagnostics and maintenance scripts in English; preserve Portuguese translations and Unicode test fixtures.
+- Validate the installer in both languages and add regression coverage for bilingual site behavior and CLI language overrides.
+
+
 ## 1.1.1 — 2026-11-15
 
 - Add a GitHub Pages project website matching LER's pixel logo and terminal palette, with Windows downloads, source cloning and Portuguese installation and usage instructions.

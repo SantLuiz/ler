@@ -1,3 +1,5 @@
+const english = document.documentElement.lang === 'en';
+const locale = english ? 'en' : 'pt-BR';
 const copyButton = document.querySelector('#copy');
 if (navigator.clipboard && copyButton) {
   copyButton.hidden = false;
@@ -5,9 +7,9 @@ if (navigator.clipboard && copyButton) {
     const status = document.querySelector('#copy-status');
     try {
       await navigator.clipboard.writeText(document.querySelector('#clone-command').textContent);
-      status.textContent = 'Comandos copiados.';
+      status.textContent = english ? 'Commands copied.' : 'Comandos copiados.';
     } catch {
-      status.textContent = 'Selecione e copie os comandos acima com Ctrl+C.';
+      status.textContent = english ? 'Select and copy the commands above with Ctrl+C.' : 'Selecione e copie os comandos acima com Ctrl+C.';
     }
   });
 }
@@ -24,8 +26,8 @@ async function loadRelease() {
     const url = new URL(installer.browser_download_url);
     if (url.origin !== 'https://github.com' || !url.pathname.startsWith('/SantLuiz/ler/releases/download/')) return;
     document.querySelectorAll('[data-download]').forEach(link => { link.href = url.href; });
-    const size = (installer.size / 1024 / 1024).toLocaleString('pt-BR', {maximumFractionDigits: 1});
-    document.querySelector('#release-info').textContent = `${release.tag_name} · Windows x64 · ${size} MB · Licença MIT`;
+    const size = (installer.size / 1024 / 1024).toLocaleString(locale, {maximumFractionDigits: 1});
+    document.querySelector('#release-info').textContent = `${release.tag_name} · Windows x64 · ${size} MB · ${english ? 'MIT license' : 'Licença MIT'}`;
   } catch { /* The static download links remain available. */ }
 }
 loadRelease();
