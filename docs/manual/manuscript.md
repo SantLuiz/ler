@@ -546,7 +546,7 @@ recordLibraryVisit grava visitas e lastUsed. setLibraryFavorite cria a identific
 
 Favoritos indisponíveis podem continuar listados, enquanto entradas indisponíveis não favoritas são omitidas. A ordenação favorece favoritos e uso recente. LibraryPicker tem sua própria ordenação para a aba de mais usadas e um contador request para que uma enumeração de pasta antiga não substitua a resposta de uma navegação nova.
 
-shortLibraryPath preserva a raiz ou prefixo de abreviação, considera até quatro segmentos finais e reduz até caber em colunas de terminal. Se nem o último segmento cabe, corta por grafemas pela direita. Ele não modifica o caminho que será usado para abrir os arquivos; só muda sua apresentação.
+shortLibraryPath abrevia a apresentação por colunas e grafemas, sem modificar o caminho real.
 
 # 17. Comandos, limites e encaminhamento de arquivos
 
