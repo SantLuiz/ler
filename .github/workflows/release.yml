@@ -25,6 +25,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.tag || github.ref }}
+          fetch-depth: 0
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.4.4
@@ -37,6 +38,24 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Release tag must exist.' }
       - run: bun install --frozen-lockfile
       - run: bun run check
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build versioned technical manual
+        shell: pwsh
+        env:
+          MANUAL_BASE_REF: ${{ inputs.tag || github.ref }}
+        run: |
+          python -m pip install reportlab Pillow pypdf pdfplumber pypdfium2 matplotlib
+          if ($LASTEXITCODE -ne 0) { throw 'Could not prepare PDF build dependencies.' }
+          bun scripts/manual/snapshot.ts
+          if ($LASTEXITCODE -ne 0) { throw 'Could not snapshot manual sources.' }
+          bun scripts/manual/capture.tsx
+          if ($LASTEXITCODE -ne 0) { throw 'Could not capture manual screens.' }
+          python scripts/manual/build.py
+          if ($LASTEXITCODE -ne 0) { throw 'Could not build technical manual.' }
+          python scripts/manual/qa.py
+          if ($LASTEXITCODE -ne 0) { throw 'Technical manual failed layout or link validation.' }
       - name: Build installer
         shell: powershell
         run: .\scripts\build-release.ps1 -DownloadCompiler
@@ -76,8 +95,9 @@ jobs:
           }
           $draft = gh release view $env:RELEASE_TAG --json isDraft | ConvertFrom-Json
           if (-not $draft.isDraft) { throw 'Release is already public; published assets will not be overwritten.' }
-          $assets = Get-ChildItem dist/*-Setup-x64.exe, dist/*-Setup-x64.exe.sha256
-          if ($assets.Count -ne 2) { throw 'Expected one production installer and one checksum.' }
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          $assets = Get-Item "dist/LER-$version-Setup-x64.exe", "dist/LER-$version-Setup-x64.exe.sha256", "output/pdf/LER_por_dentro_Manual_completo_$version.pdf"
+          if ($assets.Count -ne 3) { throw 'Expected installer, checksum and versioned PDF manual.' }
           gh release upload $env:RELEASE_TAG @($assets.FullName) --clobber
           if ($LASTEXITCODE -ne 0) { throw 'Could not upload release assets.' }
           gh release edit $env:RELEASE_TAG --draft=false --latest

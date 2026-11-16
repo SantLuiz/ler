@@ -26,6 +26,13 @@ async function loadRelease() {
     const url = new URL(installer.browser_download_url);
     if (url.origin !== 'https://github.com' || !url.pathname.startsWith('/SantLuiz/ler/releases/download/')) return;
     document.querySelectorAll('[data-download]').forEach(link => { link.href = url.href; });
+    const manual = release.assets?.find(asset => /^LER_por_dentro_Manual_completo_\d+\.\d+\.\d+\.pdf$/.test(asset.name));
+    if (manual) {
+      const manualUrl = new URL(manual.browser_download_url);
+      if (manualUrl.origin === 'https://github.com' && manualUrl.pathname.startsWith('/SantLuiz/ler/releases/download/')) {
+        document.querySelectorAll('[data-manual]').forEach(link => { link.href = manualUrl.href; });
+      }
+    }
     const size = (installer.size / 1024 / 1024).toLocaleString(locale, {maximumFractionDigits: 1});
     document.querySelector('#release-info').textContent = `${release.tag_name} · Windows x64 · ${size} MB · ${english ? 'MIT license' : 'Licença MIT'}`;
   } catch { /* The static download links remain available. */ }
