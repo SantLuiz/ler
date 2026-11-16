@@ -11,6 +11,8 @@ dist/
 # Artefatos locais de compilação e testes
 build/
 coverage/
+output/
+tmp/
 *.tsbuildinfo
 
 # Configurações pessoais e arquivos do sistema
