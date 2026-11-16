@@ -4,7 +4,7 @@
 
 LER significa Leitor Extremamente Reduzido. Este livro explica como o programa transforma arquivos locais em uma experiência de leitura no terminal, como preserva o estado dessa leitura e como é construído, testado e distribuído. O objetivo é que você consiga abrir qualquer módulo do projeto, reconhecer sua responsabilidade e acompanhar o que acontece quando uma tecla é pressionada.
 
-A base funcional é a versão estável 1.1.3. O texto também registra as regras de desenvolvimento e o roadmap que foram documentados depois dessa publicação. Ideias do roadmap não são recursos implementados. O identificador exato do código examinado, as quantidades de arquivos e o inventário de símbolos aparecem na ficha técnica e nos apêndices gerados diretamente do repositório.
+A base funcional desta edição é a versão 1.1.4, com a correção da homescreen durante a busca. O texto também registra as regras de desenvolvimento e o roadmap que foram documentados depois dessa publicação. Ideias do roadmap não são recursos implementados. O identificador exato do código examinado, as quantidades de arquivos e o inventário de símbolos aparecem na ficha técnica e nos apêndices gerados diretamente do repositório.
 
 O manual tem três níveis: explicação conceitual, descrição técnica por subsistema e referência do código. Leia os capítulos em sequência para aprender; use o sumário, o catálogo de símbolos e o código numerado para consultar um detalhe. Os números de linha referem-se à fotografia de código desta edição, não a futuras versões.
 
@@ -514,9 +514,9 @@ preventDefault evita o comportamento padrão do campo quando a aplicação assum
 
 CommandBox mostra opções filtradas, seleção, entrada e erro. Calcula uma janela de resultados para manter o item selecionado visível. KeyHints padroniza atalhos e rótulos. LibraryPicker reúne navegação em diretórios, favoritos/recentes e mais usadas. PdfPage encapsula o carregamento e recorte da imagem PDF.
 
-HomeLogo desenha o logo a partir da grade pixelizada de logo.ts. HomeStars distribui pontos determinísticos em espaço livre e anima cores com um relógio de baixa frequência. O efeito pode ser desativado por preferência; não é um gerador de imagens que cria uma nova marca a cada execução.
+HomeLogo desenha o logo a partir da grade pixelizada de logo.ts. HomeStars distribui pontos determinísticos em espaço livre e anima cores com um relógio de baixa frequência. O efeito pode ser desativado por preferência; não é um gerador de imagens que cria uma nova marca a cada execução. Na 1.1.4, a busca mantém logo e animações; resultados, caminho e atalhos reservam espaço em janelas compactas.
 
-HomeScreen, TextLine, Picture, StatisticsScreen e HighlightsScreen são componentes internos de App. Compartilham closures de estado com o componente principal. Eles são funções nomeadas, mas não classes independentes com seu próprio armazenamento persistente.
+As telas internas de App, como HomeScreen e StatisticsScreen, compartilham seu estado por closures.
 
 # 16. Aparência, identidade visual e bibliotecas salvas
 
@@ -636,13 +636,13 @@ build-site.ts copia recursos, calcula hashes de CSS/JS e os insere como versão 
 
 ci.yml instala com Bun fixado e executa typecheck e testes no Windows. package.yml gera os instaladores e valida instalação/remoção sem publicar release. pages.yml constrói o site em Ubuntu e só faz deploy de produção para main, enquanto pull requests podem construir sem publicar.
 
-release.yml verifica se a tag corresponde ao package.json, instala e testa, gera setup normal e de validação, executa as validações em português e inglês e preserva logs. As notas incluem a seção atual do changelog e os guias nos dois idiomas. Cria rascunho, envia setup e checksum e só depois torna a release pública e latest.
+release.yml verifica se a tag corresponde ao package.json, instala e testa, gera setup normal e de validação, executa as validações em português e inglês e preserva logs. As notas incluem a seção atual do changelog e os guias nos dois idiomas. Gera e verifica também o manual técnico PDF versionado. Cria rascunho, envia setup, checksum e PDF e só depois torna a release pública e latest.
 
 O pipeline não sobrescreve uma release que já é pública. Tags publicadas devem permanecer imutáveis. Os instaladores de validação não são os assets do download. O site descobre a última release estável, portanto a conclusão do upload é parte da atualização do botão de download.
 
 ## Verificar uma publicação
 
-Confira conclusão dos testes e dos jobs de instalador, status do GitHub Pages e existência dos dois assets normais. Baixe o setup e seu .sha256 e compare hashes. Um checksum verifica integridade do arquivo baixado; não equivale a assinatura digital do autor. A edição documentada não configura um certificado de assinatura do setup LER.
+Confira conclusão dos testes e dos jobs de instalador, status do GitHub Pages e existência dos três assets normais (setup, checksum e PDF). Baixe o setup e seu .sha256 e compare hashes. Um checksum verifica integridade do arquivo baixado; não equivale a assinatura digital do autor. A edição documentada não configura um certificado de assinatura do setup LER.
 
 # 20. Testes: o que cada família protege
 
@@ -774,7 +774,7 @@ O recorte inclui aplicação, testes, scripts de produto, lançador, site e work
 
 As fontes primárias são os arquivos do repositório identificados pela ficha técnica. Cada módulo tem referência de caminho e linha. As descrições de desempenho usam os registros de docs/performance.md e docs/dependencies.md; não foram inventadas novas medições de RAM ou tempos de tela para esta edição.
 
-Para reconstruir os documentos, execute o snapshot e as capturas com o Bun do projeto e depois o gerador Python com ReportLab, Pillow, pypdf e pdfplumber disponíveis. O EPUB usa o mesmo conteúdo e as mesmas figuras do PDF, com navegação por capítulos e texto refluível. O arquivo EPUB contém HTML/XML empacotado em ZIP, com mimetype não comprimido na primeira entrada.
+Para reconstruir os documentos, execute o snapshot e as capturas com o Bun do projeto e depois o gerador Python com ReportLab, Pillow, pypdf, pdfplumber e pypdfium2 disponíveis (Matplotlib fornece fontes quando DejaVu não está instalado). O EPUB usa o mesmo conteúdo e as mesmas figuras do PDF, com navegação por capítulos e texto refluível. O arquivo EPUB contém HTML/XML empacotado em ZIP, com mimetype não comprimido na primeira entrada.
 
 O PDF e o EPUB são duas apresentações da mesma edição técnica. Uma tela de celular pode reorganizar tabelas ou exigir zoom para consultar um diagrama; o texto principal continua pesquisável e refluível no EPUB. Para estudar a implementação com máximo detalhe, combine capítulos conceituais, catálogo de símbolos e código numerado.
 

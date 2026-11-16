@@ -11,23 +11,23 @@ Fonte editável do livro **LER por dentro - Manual completo do projeto**, em por
 - `../../scripts/manual/build.py`: gera PDF e EPUB a partir dos mesmos blocos de conteúdo. Inclui sumário, código numerado, fontes e inventário do lockfile.
 - `../../scripts/manual/qa.py`: verifica limites de texto do PDF, XML e referências locais do EPUB e produz folhas de contato para revisão visual.
 
-O snapshot registra o commit examinado e o commit da tag estável. Os números de linha do livro se referem a esse recorte. O código das bibliotecas externas não é reproduzido integralmente: o livro documenta seus contratos de integração, versões e responsabilidades. As listas de chamadas são extraídas sintaticamente e não representam um perfil de execução.
+O snapshot registra o commit examinado e o commit da base funcional. Os números de linha do livro se referem a esse recorte. O código das bibliotecas externas não é reproduzido integralmente: o livro documenta seus contratos de integração, versões e responsabilidades. As listas de chamadas são extraídas sintaticamente e não representam um perfil de execução.
 
 ## Gerar novamente no Windows
 
-Requer dependências de desenvolvimento do projeto e Python com `reportlab`, `Pillow`, `pypdf` e `pdfplumber`. `pdftoppm`/Poppler precisa estar no PATH. O gerador usa fontes DejaVu instaladas em `C:\Windows\Fonts`. Essas ferramentas são do processo de documentação, não dependências adicionais da aplicação instalada.
+Requer dependências de desenvolvimento do projeto e Python com `reportlab`, `Pillow`, `pypdf` e `pdfplumber`, `pypdfium2` e `matplotlib`. O gerador usa fontes DejaVu em `C:\Windows\Fonts` ou as fornecidas pelo Matplotlib. Poppler é usado para a revisão visual opcional. Essas ferramentas são do processo de documentação, não dependências adicionais da aplicação instalada.
 
 ```powershell
 .\node_modules\bun\bin\bun.exe scripts/manual/snapshot.ts
 .\node_modules\bun\bin\bun.exe scripts/manual/capture.tsx
 python scripts/manual/build.py
-pdftoppm -r 42 -png output/pdf/LER_por_dentro_Manual_completo_1.1.3.pdf dist/manual-data/page
+pdftoppm -r 42 -png output/pdf/LER_por_dentro_Manual_completo_1.1.4.pdf dist/manual-data/page
 python scripts/manual/qa.py
 ```
 
 Os fontes editoriais e scripts ficam no Git. Os arquivos em `dist/manual-data/` e `output/` são gerados e ficam ignorados. O PDF final vai para `output/pdf/`; o EPUB para `output/epub/`. A cópia para a biblioteca pessoal é uma etapa de entrega, não uma publicação do produto.
 
-O gerador valida a estrutura básica do EPUB e seus links; sua abertura também foi verificada com o leitor EPUB do próprio LER. Isso não substitui uma certificação por todas as ferramentas externas ou leitores digitais existentes. O PDF precisa de revisão das páginas renderizadas após mudanças de conteúdo/layout.
+O gerador valida a estrutura básica do EPUB e seus links; sua abertura também foi verificada com o leitor EPUB do próprio LER. Isso não substitui uma certificação por todas as ferramentas externas ou leitores digitais existentes. O PDF precisa de revisão das páginas renderizadas após mudanças de conteúdo/layout. A release gera e anexa o PDF versionado junto ao instalador e checksum. O snapshot aceita `MANUAL_BASE_REF` para identificar a base funcional; por padrão usa o último commit que alterou `src` ou `package.json`.
 
 ## Preservar produção
 

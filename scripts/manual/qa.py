@@ -36,7 +36,11 @@ with zipfile.ZipFile(report['epub']) as z:
     if target not in names:broken.append((name,target))
  assert not broken,broken
 pages=sorted(data.glob('page-*.png'));sheets=[]
-font=ImageFont.truetype('C:/Windows/Fonts/DejaVuSans.ttf',14)
+font_path=Path('C:/Windows/Fonts/DejaVuSans.ttf')
+if not font_path.exists():
+ import matplotlib
+ font_path=Path(matplotlib.get_data_path())/'fonts/ttf/DejaVuSans.ttf'
+font=ImageFont.truetype(str(font_path),14)
 for start in range(0,len(pages),12):
  group=pages[start:start+12];tw,th=290,430
  sheet=Image.new('RGB',(tw*4,th*3),'#dce5f1');draw=ImageDraw.Draw(sheet)

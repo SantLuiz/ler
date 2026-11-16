@@ -4,7 +4,7 @@ Dependencies: reportlab, Pillow, pypdf, pdfplumber. Poppler renders QA previews.
 Generated artifacts live in output/ and dist/, never in production installation.
 """
 from __future__ import annotations
-import hashlib, html, json, math, os, re, subprocess, textwrap, zipfile, uuid as uuidlib
+import hashlib, html, json, math, os, re, textwrap, zipfile, uuid as uuidlib
 from pathlib import Path
 from xml.etree import ElementTree as ET
 from PIL import Image as PILImage, ImageDraw, ImageFont
@@ -20,6 +20,7 @@ from reportlab.platypus.tableofcontents import TableOfContents
 from reportlab.graphics.shapes import Drawing, Rect, Line, String, Polygon
 from reportlab.graphics import renderPDF
 from pypdf import PdfReader
+import pypdfium2 as pdfium
 
 ROOT=Path(__file__).resolve().parents[2]
 DATA=ROOT/'dist/manual-data'
@@ -29,9 +30,13 @@ OUTPDF.mkdir(parents=True,exist_ok=True); OUTEPUB.mkdir(parents=True,exist_ok=Tr
 SNAP=json.loads((DATA/'snapshot.json').read_text(encoding='utf-8'))
 NOTES=json.loads((ROOT/'docs/manual/notes.json').read_text(encoding='utf-8'))
 TITLE='LER por dentro - Manual completo do projeto'
-STEM='LER_por_dentro_Manual_completo_1.1.3'
+VERSION=SNAP['version']
+STEM='LER_por_dentro_Manual_completo_'+VERSION
 PDF=OUTPDF/(STEM+'.pdf'); EPUB=OUTEPUB/(STEM+'.epub')
 FONTDIR=Path(os.environ.get('WINDIR','C:/Windows'))/'Fonts'
+if not (FONTDIR/'DejaVuSans.ttf').exists():
+ import matplotlib
+ FONTDIR=Path(matplotlib.get_data_path())/'fonts/ttf'
 for name,file in [('Sans','DejaVuSans.ttf'),('SansB','DejaVuSans-Bold.ttf'),('SansI','DejaVuSans-Oblique.ttf'),('Mono','DejaVuSansMono.ttf')]:
  pdfmetrics.registerFont(TTFont(name,str(FONTDIR/file)))
 pdfmetrics.registerFontFamily('Sans',normal='Sans',bold='SansB',italic='SansI',boldItalic='SansB')
@@ -65,7 +70,7 @@ def frame_png(path):
  img=PILImage.new('RGB',(round(data['cols']*cw+pad*2),data['rows']*ch+pad*2+title),DARK);d=ImageDraw.Draw(img)
  d.rounded_rectangle((6,6,img.width-6,img.height-6),radius=12,outline='#33445e',width=2)
  for i,c in enumerate(['#7396c8','#9cb3d6','#d6e4f6']):d.ellipse((pad+i*16,17,pad+i*16+7,24),fill=c)
- d.text((pad+70,10),'LER 1.1.3 | captura do renderizador de testes',font=ImageFont.truetype(str(FONTDIR/'DejaVuSansMono.ttf'),13),fill='#a6b6cd')
+ d.text((pad+70,10),f'LER {VERSION} | captura do renderizador de testes',font=ImageFont.truetype(str(FONTDIR/'DejaVuSansMono.ttf'),13),fill='#a6b6cd')
  def rgb(v):return tuple(int(v.get('buffer',{}).get(str(i),255)) for i in range(3))
  for y,line in enumerate(data['lines']):
   x=pad
@@ -80,7 +85,10 @@ for capture in (DATA/'captures').glob('*.json'):frame_png(capture)
 def drawing_png(drawing,name):
  temp=DATA/(name+'.pdf');renderPDF.drawToFile(drawing,str(temp))
  prefix=ASSETS/name
- subprocess.run(['pdftoppm','-r','180','-png','-singlefile',str(temp),str(prefix)],check=True,stdout=subprocess.DEVNULL,stderr=subprocess.PIPE)
+ document=pdfium.PdfDocument(str(temp))
+ page=document[0];bitmap=page.render(scale=180/72)
+ bitmap.to_pil().save(str(prefix)+'.png')
+ bitmap.close();page.close();document.close()
  return str(prefix)+'.png'
 
 DIAGRAMS={}
@@ -258,11 +266,11 @@ for sec in sections:
 
 class LERDoc(BaseDocTemplate):
  def __init__(self,filename):
-  super().__init__(str(filename),pagesize=A4,rightMargin=M,leftMargin=M,topMargin=54,bottomMargin=48,title=TITLE,author='Documentação técnica do projeto LER',subject='Arquitetura, código, dependências e fluxos do LER 1.1.3',pageCompression=1)
+  super().__init__(str(filename),pagesize=A4,rightMargin=M,leftMargin=M,topMargin=54,bottomMargin=48,title=TITLE,author='Documentação técnica do projeto LER',subject=f'Arquitetura, código, dependências e fluxos do LER {VERSION}',pageCompression=1)
   self.addPageTemplates(PageTemplate(id='normal',frames=[Frame(M,48,BODYW,H-108,id='body',leftPadding=0,rightPadding=0,topPadding=0,bottomPadding=0)],onPage=self.chrome))
  def chrome(self,c,doc):
   if doc.page==1:return
-  c.saveState();c.setFillColor(colors.HexColor(DARK));c.rect(0,H-31,W,31,fill=1,stroke=0);c.setFillColor(colors.HexColor(SKY));c.setFont('SansB',8);c.drawString(M,H-20,'LER / POR DENTRO');c.setFillColor(colors.HexColor('#D6D6D6'));c.setFont('Sans',7);c.drawRightString(W-M,H-20,'Manual técnico | base 1.1.3');c.setStrokeColor(colors.HexColor('#DCE5F1'));c.line(M,35,W-M,35);c.setFont('Sans',7);c.setFillColor(colors.HexColor(MUTED));c.drawString(M,23,'Código explicado, dados preservados.');c.drawRightString(W-M,23,str(doc.page));c.restoreState()
+  c.saveState();c.setFillColor(colors.HexColor(DARK));c.rect(0,H-31,W,31,fill=1,stroke=0);c.setFillColor(colors.HexColor(SKY));c.setFont('SansB',8);c.drawString(M,H-20,'LER / POR DENTRO');c.setFillColor(colors.HexColor('#D6D6D6'));c.setFont('Sans',7);c.drawRightString(W-M,H-20,f'Manual técnico | base {VERSION}');c.setStrokeColor(colors.HexColor('#DCE5F1'));c.line(M,35,W-M,35);c.setFont('Sans',7);c.setFillColor(colors.HexColor(MUTED));c.drawString(M,23,'Código explicado, dados preservados.');c.drawRightString(W-M,23,str(doc.page));c.restoreState()
  def afterFlowable(self,flowable):
   if isinstance(flowable,Paragraph) and hasattr(flowable,'toclevel'):
    level=flowable.toclevel;title=flowable.getPlainText();key=flowable.bookmark
@@ -285,7 +293,7 @@ class Cover(Flowable):
   c.setFont('Sans',11)
   for i,line in enumerate(['Da primeira tecla aos pixels na tela.','Arquitetura, funções, classes, dados, testes','e distribuição explicados com o código aberto.']):c.drawString(0,280-i*19,line)
   c.setFillColor(colors.HexColor(SKY));c.rect(0,179,70,4,fill=1,stroke=0)
-  c.setFont('SansB',11);c.drawString(0,143,'EDIÇÃO TÉCNICA / 1.1.3')
+  c.setFont('SansB',11);c.drawString(0,143,f'EDIÇÃO TÉCNICA / {VERSION}')
   c.setFillColor(colors.HexColor('#AAB9D0'));c.setFont('Sans',9);c.drawString(0,118,'Português • 15 de novembro de 2026');c.drawString(0,98,'Conceitos + capturas reais + diagramas + referência integral')
   c.setFont('Mono',7.5);c.drawString(0,52,'snapshot '+SNAP['commit'][:12]);c.drawString(0,36,'stable   '+SNAP['stableCommit'][:12]);c.restoreState()
 
@@ -313,7 +321,7 @@ class CodeBlock(Preformatted):
 
 story=[Cover(),PageBreak(),para('Ficha da edição','h1')]
 source_modules=[m for m in SNAP['modules'] if m['file'].startswith('src/')]
-story.append(table_flow([['Item','Valor'],['Produto estável','LER '+SNAP['version']],['Snapshot examinado',SNAP['commit']],['Commit da tag estável',SNAP['stableCommit']],['Módulos/arquivos no inventário',str(len(SNAP['modules']))],['Arquivos da aplicação em src',str(len(source_modules))],['Símbolos nomeados identificados',str(sum(len(m['symbols']) for m in SNAP['modules']))],['Casos de teste identificados',str(sum(len(m['tests']) for m in SNAP['modules']))],['Estado desta entrega','Documentação em branch; sem alteração da instalação estável ou push.']], [.34,.66]))
+story.append(table_flow([['Item','Valor'],['Produto estável','LER '+SNAP['version']],['Snapshot examinado',SNAP['commit']],['Commit da base funcional',SNAP['stableCommit']],['Módulos/arquivos no inventário',str(len(SNAP['modules']))],['Arquivos da aplicação em src',str(len(source_modules))],['Símbolos nomeados identificados',str(sum(len(m['symbols']) for m in SNAP['modules']))],['Casos de teste identificados',str(sum(len(m['tests']) for m in SNAP['modules']))],['Estado desta entrega','Manual técnico da versão 1.1.4. Capturas usam apenas dados demonstrativos.']], [.34,.66]))
 story.extend([Spacer(1,16),para('Como usar este livro','h2'),para('Primeira leitura: capítulos 1 a 6. Entendimento da implementação: 7 a 17. Desenvolvimento e operação: 18 a 23. Consulta: glossário, símbolos, testes e código numerado. O conteúdo técnico é compartilhado pelo PDF e pelo EPUB.'),para('As datas e medidas históricas estão contextualizadas no texto. Diagramas são explicativos e derivados do código, não capturas de ferramentas de monitoramento. As telas usam dados demonstrativos.'),PageBreak(),para('Sumário navegável','h1')])
 toc=TableOfContents();toc.levelStyles=[ParagraphStyle('toc0',fontName='SansB',fontSize=9.4,leading=15,spaceBefore=8,textColor=INK),ParagraphStyle('toc1',fontName='Sans',fontSize=8,leading=11,leftIndent=12,textColor=MUTED)];story.append(toc)
 for idx,sec in enumerate(sections):
@@ -340,7 +348,9 @@ def xhtml(title,body):return '<?xml version="1.0" encoding="utf-8"?>\n<html xmln
 def htmlinline(s):return re.sub(r'\*\*([^*]+)\*\*',r'<strong>\1</strong>',esc(s))
 assetpaths={};chapters=[]
 coverjpg=ASSETS/'cover.png'
-subprocess.run(['pdftoppm','-r','120','-png','-singlefile','-f','1','-l','1',str(PDF),str(ASSETS/'cover')],check=True,stdout=subprocess.DEVNULL,stderr=subprocess.PIPE)
+document=pdfium.PdfDocument(str(PDF));page=document[0];bitmap=page.render(scale=120/72)
+bitmap.to_pil().save(str(ASSETS/'cover.png'))
+bitmap.close();page.close();document.close()
 for idx,sec in enumerate(sections):
  parts=['<h1>'+esc(sec['title'])+'</h1>']
  for b in sec['blocks']:
@@ -356,7 +366,7 @@ for idx,sec in enumerate(sections):
    path=Path(DIAGRAMS[b['asset']][1]) if b['vector'] else ASSETS/(b['asset']+'.png');assetpaths[path.name]=path
    parts.append('<div><img src="images/'+esc(path.name)+'" alt="'+esc(txt)+'"/><p class="caption">'+esc(txt)+'</p></div>')
  name=f'chapter-{idx:02}.xhtml';chapters.append((name,sec['title'],xhtml(sec['title'],''.join(parts))))
-cover=xhtml(TITLE,'<div><img src="images/cover.png" alt="Capa: LER por dentro, manual completo do projeto"/></div><h1>'+esc(TITLE)+'</h1><p>Base funcional: 1.1.3. Snapshot: '+SNAP['commit']+'.</p>')
+cover=xhtml(TITLE,'<div><img src="images/cover.png" alt="Capa: LER por dentro, manual completo do projeto"/></div><h1>'+esc(TITLE)+'</h1><p>Base funcional: '+VERSION+'. Snapshot: '+SNAP['commit']+'.</p>')
 tocbody='<h1>Sumário</h1><nav epub:type="toc" id="toc"><ol>'+''.join('<li><a href="'+name+'">'+esc(title)+'</a></li>' for name,title,_ in chapters)+'</ol></nav>'
 nav=xhtml('Sumário',tocbody)
 uuid='urn:uuid:'+str(uuidlib.UUID(hashlib.sha256((SNAP['commit']+TITLE).encode()).hexdigest()[:32]))

@@ -45,6 +45,7 @@ for(const [name,requested]of Object.entries({...manifest.dependencies,...manifes
  const pkg=await Bun.file(path.join(repo,'node_modules',name,'package.json')).json();dependencies.push({name,requested,resolved:pkg.version,license:pkg.license,production:name in manifest.dependencies,dependencies:pkg.dependencies??{},peerDependencies:pkg.peerDependencies??{}});
 }
 const lock=ts.parseConfigFileTextToJson('bun.lock',await fs.readFile(path.join(repo,'bun.lock'),'utf8')).config;
-const data={version:manifest.version,commit:git('rev-parse','HEAD'),stableCommit:git('rev-parse','v1.1.3^{}'),date:'2026-11-15',branch:git('branch','--show-current'),modules,dependencies,lockPackages:lock.packages,manifest};
+const stableCommit=process.env.MANUAL_BASE_REF?git('rev-parse',process.env.MANUAL_BASE_REF+'^{}'):git('log','-1','--format=%H','--','src','package.json');
+const data={version:manifest.version,commit:git('rev-parse','HEAD'),stableCommit,date:process.env.MANUAL_DATE??new Date().toISOString().slice(0,10),branch:git('branch','--show-current'),modules,dependencies,lockPackages:lock.packages,manifest};
 await Bun.write(path.join(output,'snapshot.json'),JSON.stringify(data,null,2));
 console.log(JSON.stringify({modules:modules.length,symbols:modules.reduce((n,m)=>n+m.symbols.length,0),tests:modules.reduce((n,m)=>n+m.tests.length,0),output}));
