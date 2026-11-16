@@ -29,4 +29,4 @@ The site retains Portuguese at `/` so existing links keep working. English lives
 
 ## Validation
 
-The regression suite checks both static pages, reciprocal language links, matching sections, download metadata, clipboard success/failure messages and CLI language selection. Installer validation accepts `-Language english` or `-Language brazilianportuguese`; distribution workflows exercise both with the separate validation AppId.
+The regression suite checks both static pages, reciprocal language links, matching sections, download metadata, clipboard success/failure messages and CLI language selection. Site builds add content revisions to JavaScript and CSS URLs so returning visitors receive the translated assets after deployment. Installer validation accepts `-Language english` or `-Language brazilianportuguese`; distribution workflows exercise both with the separate validation AppId.
