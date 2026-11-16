@@ -17,7 +17,7 @@ test('abbreviated paths keep the library and nearest parents while respecting te
 });
 
 test('clicking the path switches libraries in the same renderer, preserving sessions and rejecting invalid or locked roots',async()=>{
- const root=await fs.mkdtemp(path.join(os.tmpdir(),'ler-switch-'));const appDirectory=path.join(root,'app'),a=path.join(root,'First library'),b=path.join(root,'Second library'),locked=path.join(root,'Locked');
+ const root=await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(),'ler-switch-')));const appDirectory=path.join(root,'app'),a=path.join(root,'First library'),b=path.join(root,'Second library'),locked=path.join(root,'Locked');
  let setup:Awaited<ReturnType<typeof testRender>>|undefined;let current:LibrarySessionState|undefined;let lockedStore:Awaited<ReturnType<typeof store>>|undefined;
  try{
   for(const dir of [a,b,locked])await fs.mkdir(dir,{recursive:true});

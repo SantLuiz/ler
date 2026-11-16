@@ -11,7 +11,7 @@ import path from 'node:path';
 import os from 'node:os';
 
 test('global tab manifest restores absolute files while routing reading data and statistics to each origin',async()=>{
- const root=await fs.mkdtemp(path.join(os.tmpdir(),'ler-workspace-')),app=path.join(root,'app'),a=path.join(root,'A'),b=path.join(root,'B');let workspace:ReadingWorkspace|undefined;
+ const root=await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(),'ler-workspace-'))),app=path.join(root,'app'),a=path.join(root,'A'),b=path.join(root,'B');let workspace:ReadingWorkspace|undefined;
  try{
   for(const dir of [a,b])await fs.mkdir(dir,{recursive:true});await fs.writeFile(path.join(a,'Same.txt'),'Alpha');await fs.writeFile(path.join(b,'Same.txt'),'Beta');
   const ids:string[]=[];
@@ -30,7 +30,7 @@ test('global tab manifest restores absolute files while routing reading data and
 });
 
 test('tabs survive library switching, same names remain distinct and edits go to the original book',async()=>{
- const root=await fs.mkdtemp(path.join(os.tmpdir(),'ler-global-tabs-')),app=path.join(root,'app'),a=path.join(root,'A'),b=path.join(root,'B');let setup:Awaited<ReturnType<typeof testRender>>|undefined;let current:LibrarySessionState|undefined;
+ const root=await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(),'ler-global-tabs-'))),app=path.join(root,'app'),a=path.join(root,'A'),b=path.join(root,'B');let setup:Awaited<ReturnType<typeof testRender>>|undefined;let current:LibrarySessionState|undefined;
  try{
   for(const dir of [a,b])await fs.mkdir(dir,{recursive:true});const alphaFile=path.join(a,'Same.txt'),betaFile=path.join(b,'Same.txt');await fs.writeFile(alphaFile,'Alpha first.\nAlpha second.');await fs.writeFile(betaFile,'Beta first.\nBeta second.');await fs.writeFile(path.join(b,'Copy.txt'),await fs.readFile(alphaFile));
   const ids:string[]=[];
@@ -52,7 +52,7 @@ test('tabs survive library switching, same names remain distinct and edits go to
 },15000);
 
 test('a missing restored file reports an error without deleting its saved reading data or closing other books',async()=>{
- const root=await fs.mkdtemp(path.join(os.tmpdir(),'ler-global-missing-')),app=path.join(root,'app'),a=path.join(root,'A'),b=path.join(root,'B');let setup:Awaited<ReturnType<typeof testRender>>|undefined;let current:LibrarySessionState|undefined;let workspace:ReadingWorkspace|undefined;
+ const root=await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(),'ler-global-missing-'))),app=path.join(root,'app'),a=path.join(root,'A'),b=path.join(root,'B');let setup:Awaited<ReturnType<typeof testRender>>|undefined;let current:LibrarySessionState|undefined;let workspace:ReadingWorkspace|undefined;
  try{
   for(const dir of [a,b])await fs.mkdir(dir,{recursive:true});const ids:string[]=[];
   for(const [dir,text] of [[a,'Missing book.'],[b,'Surviving book.']]){await fs.writeFile(path.join(dir,'Book.txt'),text);const disk=await store(dir,app),book=await openBook(path.join(dir,'Book.txt'));ids.push(book.id);disk.state.lang='en';disk.state.books[book.id]={file:'Book.txt',anchor:{chapter:0,block:0,offset:0},bookmarks:[{anchor:{chapter:0,block:0,offset:0},excerpt:text,date:new Date().toISOString()}]};disk.state.tabs=[book.id];await disk.save();await disk.close();book.close();}
@@ -64,7 +64,7 @@ test('a missing restored file reports an error without deleting its saved readin
 },15000);
 
 test('an open PDF remains usable after switching the library and its worker closes with the tab',async()=>{
- const root=await fs.mkdtemp(path.join(os.tmpdir(),'ler-global-pdf-')),app=path.join(root,'app'),a=path.join(root,'A'),b=path.join(root,'B');let setup:Awaited<ReturnType<typeof testRender>>|undefined;let current:LibrarySessionState|undefined;
+ const root=await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(),'ler-global-pdf-'))),app=path.join(root,'app'),a=path.join(root,'A'),b=path.join(root,'B');let setup:Awaited<ReturnType<typeof testRender>>|undefined;let current:LibrarySessionState|undefined;
  try{
   for(const dir of [a,b])await fs.mkdir(dir,{recursive:true});const file=path.join(a,'Document.pdf');await fs.writeFile(file,pdfFixture());const metadata=await openBook(file),id=metadata.id;metadata.close();const disk=await store(a,app);disk.state.lang='en';disk.state.books[id]={file:'Document.pdf',anchor:{chapter:0,block:0,offset:0},bookmarks:[]};disk.state.tabs=[id];current={root:a,state:disk.state,persistence:disk,opened:[]};
   setup=await testRender(()=><LibrarySession {...current!} appDirectory={app} exit={async()=>{}} onSessionChange={value=>{current=value;}}/>,{width:100,height:30});for(let i=0;i<100&&!current.opened.length;i++){await Bun.sleep(10);await setup.renderOnce();}await Bun.sleep(20);const pdf=current.opened[0];
