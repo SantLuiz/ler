@@ -51,6 +51,33 @@ test('home starfield fills free space with bounded, stable and unique positions'
  expect(stars.some(star=>star.x<20)&&stars.some(star=>star.x>140)).toBe(true);
 });
 
+test('home search preserves logo size and animated colors while results fit the terminal',async()=>{
+ const root=await fs.mkdtemp(path.join(os.tmpdir(),'ler-home-search-effects-'));
+ try {
+  for(let i=0;i<10;i++)await fs.writeFile(path.join(root,`Book ${i}.txt`),`Reading passage ${i}.`);
+  for(const [width,height] of [[100,40],[100,30],[72,28],[60,20]]){
+   const clock=new ManualClock();
+   const setup=await testRender(()=><App root={root} state={{version:1,books:{},tabs:[],lang:'en'}} opened={[]} exit={async()=>{}}/>,{width,height,clock});
+   try {
+    await setup.renderOnce();const logo=setup.renderer.root.findDescendantById('home-logo')!;
+    const logoHeight=logo.height;
+    await setup.mockInput.typeText('Book');await setup.renderOnce();
+    expect(setup.renderer.root.findDescendantById('home-logo')!.height).toBe(logoHeight);
+    expect(setup.captureCharFrame()).toContain('Leitor Extremamente Reduzido');
+    clock.advance(700);await setup.renderOnce();const colors=JSON.stringify(setup.captureSpans());
+    clock.advance(700);await setup.renderOnce();expect(JSON.stringify(setup.captureSpans())).not.toBe(colors);
+    for(let i=0;i<100;i++){await Bun.sleep(10);await setup.renderOnce();if(setup.captureCharFrame().includes('10 books found'))break;}
+    const frame=setup.captureCharFrame();expect(frame).toContain('10 books found');expect(frame).toContain('Book 0');
+    expect(frame).toContain('tab options');expect(frame).toContain('LER 1.1.3');
+    expect(setup.renderer.root.findDescendantById('home-logo')!.height).toBe(logoHeight);
+    await setup.mockInput.typeText(' unmatched');await setup.renderOnce();
+    expect(setup.captureCharFrame()).toContain('No matching books.');
+    expect(setup.renderer.root.findDescendantById('home-logo')!.height).toBe(logoHeight);
+   }finally{await setup.dispose();}
+  }
+ }finally{await fs.rm(root,{recursive:true,force:true});}
+});
+
 test('pixel size and quantity change both the logo and home while preferences enforce limits',()=>{
  expect(preferences()).toMatchObject({animationPixelSize:2,animationDensity:100});
  expect(preferences({animationPixelSize:99,animationDensity:-20})).toMatchObject({animationPixelSize:3,animationDensity:25});
