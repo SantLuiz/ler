@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.4 — 2026-11-15
+
+- Preserve the home logo size and logo/background animations while searching the library.
+- Fit search results, keyboard hints and the library path without overlap in compact terminals.
+
 ## 1.1.3 — 2026-11-15
 
 - Precompile the installed interface during release builds, removing Babel and its compiler dependencies from the runtime installation.

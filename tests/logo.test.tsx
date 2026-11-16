@@ -4,6 +4,7 @@ import {testRender} from '@opentui/solid';
 import {ManualClock} from '@opentui/core/testing';
 import {HomeLogo} from '../src/ui/components/HomeLogo';
 import {App} from '../src/ui/App';
+import {VERSION} from '../src/cli';
 import {preferences} from '../src/state/preferences';
 import {logoPixels,pixelColor,logoColors,homeStars} from '../src/ui/logo';
 import {store,type State} from '../src/state/storage';
@@ -68,7 +69,7 @@ test('home search preserves logo size and animated colors while results fit the 
     clock.advance(700);await setup.renderOnce();expect(JSON.stringify(setup.captureSpans())).not.toBe(colors);
     for(let i=0;i<100;i++){await Bun.sleep(10);await setup.renderOnce();if(setup.captureCharFrame().includes('10 books found'))break;}
     const frame=setup.captureCharFrame();expect(frame).toContain('10 books found');expect(frame).toContain('Book 0');
-    expect(frame).toContain('tab options');expect(frame).toContain('LER 1.1.3');
+    expect(frame).toContain('tab options');expect(frame).toContain(`LER ${VERSION}`);
     expect(setup.renderer.root.findDescendantById('home-logo')!.height).toBe(logoHeight);
     await setup.mockInput.typeText(' unmatched');await setup.renderOnce();
     expect(setup.captureCharFrame()).toContain('No matching books.');
