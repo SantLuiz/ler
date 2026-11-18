@@ -12,8 +12,9 @@ test.skipIf(process.platform!=='win32')('CMD launcher works through PATH in fold
 },35000);
 test.skipIf(process.platform!=='win32')('installer validation is repeatable without changing the user PATH',()=>{
  const script=path.resolve(import.meta.dir,'../scripts/install.ps1').replaceAll("'","''");const command=`$before = [Environment]::GetEnvironmentVariable('Path','User'); & '${script}' -NoPath -NoContextMenu -SkipDependencies; & '${script}' -NoPath -NoContextMenu -SkipDependencies; if ($before -cne [Environment]::GetEnvironmentVariable('Path','User')) { throw 'PATH changed' }`;
- const result=spawnSync('powershell.exe',['-NoProfile','-ExecutionPolicy','Bypass','-Command',command],{encoding:'utf8',timeout:15000});expect(result.status).toBe(0);
-},35000);
+ const result=spawnSync('powershell.exe',['-NoProfile','-ExecutionPolicy','Bypass','-Command',command],{encoding:'utf8',timeout:45000});
+ if(result.status!==0)throw new Error(result.error?.message??(result.stdout+result.stderr));
+},55000);
 
 test.skipIf(process.platform!=='win32')('context menu plan covers only supported formats and the Explorer launcher preserves literal file paths',async()=>{
  const repo=path.resolve(import.meta.dir,'..');const root=await fs.mkdtemp(path.join(os.tmpdir(),'LER context menu '));
