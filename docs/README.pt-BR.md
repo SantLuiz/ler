@@ -1,6 +1,6 @@
 # LER — Leitor Extremamente Reduzido
 
-Um leitor de **EPUB, TXT e PDF no terminal**, feito para usar principalmente com o teclado. A versão **1.1.4** lê seus arquivos localmente: não exige conta, não envia livros e não usa telemetria. A instalação e os testes têm foco no Windows.
+Um leitor de **EPUB, TXT e PDF no terminal**, feito para usar principalmente com o teclado. A versão **1.1.5** lê seus arquivos localmente: não exige conta, não envia livros e não usa telemetria. A instalação e os testes têm foco no Windows.
 
 [English](../README.md) · [Comandos](commands.pt-BR.md)
 
@@ -22,6 +22,8 @@ Para uso normal, abra `LER-<versão>-Setup-x64.exe` e siga o assistente gráfico
 Para remover, use **Aplicativos instalados > LER > Desinstalar** no Windows ou `unins000.exe` na pasta instalada. O desinstalador gráfico remove o aplicativo, seus componentes privados e todos os dados de leitura após confirmação; livros externos são preservados. Veja o [guia do instalador](../scripts/release-readme.md).
 
 Para gerar o instalador neste projeto, execute `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-release.ps1 -DownloadCompiler`. Apenas a máquina de build usa o compilador Inno Setup portátil, guardado dentro do projeto. O `.exe` fica em `dist/`. As instruções abaixo são para instalação pelo código-fonte:
+
+O mesmo build também gera `LER-<versão>-Portable-x64.zip`. Extraia tudo e abra `LER.cmd`, ou execute `.\Configurar-LER.ps1 -AdicionarAoPath` para verificar o pacote e habilitar o comando no PATH do usuário. O ZIP inclui o Bun privado e todas as dependências, sem downloads na máquina de destino. Políticas corporativas continuam valendo; solicite à TI aprovação de componentes bloqueados. Veja o [guia portátil](../scripts/portable-readme.md).
 
 Você precisa de **Git** e de uma destas opções: **Bun 1.4.4 ou superior**, ou **Node.js com npm**. Se não houver Bun, o instalador prepara uma cópia local dele. A instalação precisa de internet; a leitura funciona offline.
 

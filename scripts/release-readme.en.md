@@ -1,5 +1,9 @@
 # Install LER on Windows x64
 
+To run LER without installation, download `LER-<version>-Portable-x64.zip`, extract it, and open `LER.cmd`. The optional `Configurar-LER.ps1 -AdicionarAoPath` script makes the terminal command available to your user.
+
+Both packages include `THIRD-PARTY-NOTICES.txt` and a `licenses` folder with the runtime notices. LER's MIT license covers its own code.
+
 Open `LER-<version>-Setup-x64.exe` and follow the graphical wizard. Choose English or Brazilian Portuguese, select the installation folder and integrations, and click Install.
 
 Everything LER needs is included. Installation and reading work offline. You do not need Git, Node.js, npm, a global Bun installation or administrator access. The runtime and dependencies are private components inside the LER folder.

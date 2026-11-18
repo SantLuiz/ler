@@ -26,10 +26,10 @@
       <p class="subtitle">Leitor Extremamente Reduzido</p>
       <h1>Menos interface.<br>Mais uma página.</h1>
       <p class="intro">Seus livros, seu teclado e um lugar tranquilo para ler.<br class="desktop"> Uma biblioteca local que guarda onde você parou.</p>
-      <div class="actions"><a class="button primary" data-download href="https://github.com/SantLuiz/ler/releases/latest">↓ Baixar para Windows</a><a class="button" href="#codigo">&lt;/&gt; Clonar repositório</a></div>
-      <p class="fine" id="release-info" aria-live="polite">v1.1.4 · Windows x64 · Instalador gráfico · Licença MIT</p>
+      <div class="actions"><a class="button primary" data-download href="https://github.com/SantLuiz/ler/releases/latest">↓ Baixar para Windows</a><a class="button" href="#codigo">&lt;/&gt; Clonar repositório</a><a class="button" data-portable href="https://github.com/SantLuiz/ler/releases/latest">↓ Baixar versão portátil · Windows x64</a></div>
+      <p class="fine" id="release-info" aria-live="polite">v1.1.4 · Windows x64 · Instalador gráfico · Licença MIT (código do LER)</p>
       <a class="quiet-link" href="https://github.com/SantLuiz/ler/releases">Todas as versões e checksums ↗</a>
-      <a class="quiet-link" data-manual href="https://github.com/SantLuiz/ler/releases/download/v1.1.4/LER_por_dentro_Manual_completo_1.1.4.pdf">Manual técnico 1.1.4 em PDF ↗</a>
+      <a class="quiet-link" data-manual href="https://github.com/SantLuiz/ler/releases/download/v1.1.4/LER_por_dentro_Manual_completo_1.1.4.pdf">Manual técnico em PDF ↗</a>
       <div class="terminal" aria-label="Demonstração ilustrativa da interface do LER">
         <div class="terminal-bar"><span>LER / biblioteca</span><span>EPUB · TXT · PDF</span></div>
         <div class="terminal-body"><div class="terminal-path">~/Documentos/Biblioteca <span>Ctrl+L</span></div><div class="search">&gt; <span>Buscar um livro, título ou autor</span><span class="cursor">▌</span></div><div class="book selected"><span>› Dom Casmurro</span><span>Machado de Assis · EPUB</span></div><div class="book"><span>  Poemas escolhidos</span><span>TXT</span></div><div class="book"><span>  Caderno de estudos</span><span>PDF</span></div><div class="terminal-help">Enter abrir <span>Tab opções</span><span>Ctrl+L biblioteca</span></div></div>
@@ -42,6 +42,7 @@
     </section>
     <section id="instalar" class="shell section install">
       <div class="section-title"><span class="index">02 / INSTALAR</span><h2>Do download à primeira leitura.</h2><p>Abertura mais rápida e instalação menor. O instalador inclui tudo o que o LER precisa; você não precisa instalar Git, Node.js ou Bun.</p><a class="button primary" data-download href="https://github.com/SantLuiz/ler/releases/latest">↓ Baixar instalador · Windows x64</a></div>
+      <p>Extraia o ZIP e abra <code>LER.cmd</code>. O pacote inclui as dependências e funciona offline. Para habilitar o comando no terminal, use <code>Configurar-LER.ps1 -AdicionarAoPath</code>.</p>
       <ol class="steps"><li><h3>Baixe e abra o instalador.</h3><p>Escolha o arquivo <code>LER-…-Setup-x64.exe</code> no GitHub Releases e siga o assistente. A instalação funciona offline e não exige administrador.</p></li><li><h3>Escolha onde instalar.</h3><p>Selecione a pasta e as integrações: atalhos, comando <code>LER</code> no terminal e “Abrir com LER” no Explorador. Guarde seus livros fora da pasta do aplicativo.</p></li><li><h3>Abra o LER e escolha seus livros.</h3><p>Use o menu Iniciar ou um atalho. Na tela inicial, pressione <kbd>Ctrl</kbd> + <kbd>L</kbd> para selecionar sua biblioteca; confirme com “Usar esta pasta”.</p></li></ol>
     </section>
     <section id="usar" class="shell section">

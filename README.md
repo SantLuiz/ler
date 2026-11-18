@@ -1,6 +1,6 @@
 # LER — Leitor Extremamente Reduzido
 
-A **terminal reader for EPUB, TXT and PDF**, designed primarily for the keyboard. Version **1.1.4** reads local files without accounts, book uploads or telemetry. Installation and testing focus on Windows.
+A **terminal reader for EPUB, TXT and PDF**, designed primarily for the keyboard. Version **1.1.5** reads local files without accounts, book uploads or telemetry. Installation and testing focus on Windows.
 
 [Português (Brasil)](docs/README.pt-BR.md) · [Commands](docs/commands.md)
 
@@ -18,6 +18,8 @@ A **terminal reader for EPUB, TXT and PDF**, designed primarily for the keyboard
 ## First installation on Windows
 
 For end users, `LER-<version>-Setup-x64.exe` provides a graphical installation wizard and native uninstaller. It includes a private runtime and production dependencies, works offline, and installs only LER. No Git, Node.js, npm, global Bun or administrator access is required. The default folder is `%LOCALAPPDATA%\Programs\LER`; the wizard lets you choose the folder, shortcuts, terminal command and Explorer menu. Windows **Installed apps > LER > Uninstall** removes the app and its reading data after confirmation, preserving external books. See the [installer guide](scripts/release-readme.md). Build with `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-release.ps1 -DownloadCompiler`; only the build machine uses the portable Inno Setup compiler. Output is in `dist/`.
+
+For a ZIP that can be extracted and used offline, use `LER-<version>-Portable-x64.zip`, produced by the same build script. Open `LER.cmd`, or run `.\Configurar-LER.ps1 -AdicionarAoPath` to verify the package and add the terminal command to your user PATH. It includes the private Bun runtime and all runtime dependencies. Corporate execution policies still apply; ask IT to approve blocked components. See the [portable guide](scripts/portable-readme.md).
 
 The following installation from source is intended for contributors:
 

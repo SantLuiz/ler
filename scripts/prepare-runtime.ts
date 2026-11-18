@@ -55,10 +55,10 @@ let notices='Bundled JavaScript dependencies (original package licenses)\n\n';
 for(const name of packages){
   if(name.startsWith('.'))continue;
   const directory=path.join(modules,name);
-  for(const file of await fs.readdir(directory))if(/^licen[cs]e(?:\.|$)/i.test(file))notices+=`\n--- ${name}/${file} ---\n${await fs.readFile(path.join(directory,file),'utf8')}\n`;
+  for(const file of await fs.readdir(directory))if(/^(?:licen[cs]e|notice|copying)(?:[._-]|$)/i.test(file))notices+=`\n--- ${name}/${file} ---\n${await fs.readFile(path.join(directory,file),'utf8')}\n`;
   if(!keep.has(name))await fs.rm(directory,{recursive:true,force:true});
 }
 await fs.rm(path.join(modules,'.bin'),{recursive:true,force:true});
 for(const item of await fs.readdir(modules))if(item.startsWith('@')&&(await fs.readdir(path.join(modules,item))).length===0)await fs.rmdir(path.join(modules,item));
-await Bun.write(path.join(target,'THIRD-PARTY-NOTICES.txt'),notices);
+await Bun.write(path.join(target,'THIRD-PARTY-NOTICES.txt'),'For the bundled Bun executable and its native libraries, see licenses/.\n\n'+notices);
 console.log(`Precompiled interface; ${keep.size} runtime packages retained.`);

@@ -1,5 +1,9 @@
 # Instalar o LER no Windows x64
 
+Para usar sem instalar, baixe `LER-<versao>-Portable-x64.zip`, extraia tudo e abra `LER.cmd`. O script opcional `Configurar-LER.ps1 -AdicionarAoPath` habilita o comando no terminal. Consulte o `LEIA-ME.md` do ZIP.
+
+Os dois pacotes incluem `THIRD-PARTY-NOTICES.txt` e a pasta `licenses` com os avisos do runtime. A licenca MIT do LER cobre seu codigo.
+
 Abra `LER-<versao>-Setup-x64.exe` com dois cliques e siga o assistente grafico: escolha a pasta, selecione as integracoes desejadas e clique em Instalar.
 
 O instalador inclui tudo o que o LER precisa e funciona offline. Nao instala Git, Node.js, npm, Bun global, servicos ou atualizadores na maquina. O runtime e as dependencias sao componentes privados dentro da pasta do LER, removidos junto com ele.

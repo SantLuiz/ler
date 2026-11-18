@@ -20,8 +20,8 @@ git tag -a v1.1.0 -m "LER 1.1.0"
 git push origin v1.1.0
 ```
 
-3. O workflow `release.yml` executa os testes, gera o instalador com `scripts/build-release.ps1`, testa instalação e remoção usando o AppId separado de validação e publica o `.exe`, seu SHA-256 e o manual técnico PDF da mesma versão. Uma falha no upload mantém a release como rascunho. Releases públicas existentes nunca são sobrescritas.
-4. Confira os três anexos em **Releases**. O botão do site acompanha automaticamente a última versão estável; não exige editar o HTML. O link do manual acompanha o PDF anexado à mesma release.
+3. O workflow `release.yml` executa os testes, gera os pacotes com `scripts/build-release.ps1` e usa um AppId separado para testar instalação e remoção. Uma falha no upload mantém a release como rascunho. Releases públicas existentes nunca são sobrescritas.
+4. Confira os cinco anexos em **Releases**: instalador, ZIP portátil, seus respectivos arquivos SHA-256 e o manual técnico em PDF. Os botões do site acompanham a última versão estável. O workflow testa o ZIP extraído, incluindo o script de configuração e o comando no PATH.
 
 Para repetir uma execução, use **Actions → Publish Windows release → Run workflow**, informando a tag já existente. Não mova tags de versões publicadas. O workflow usa o `GITHUB_TOKEN` fornecido pelo GitHub; não precisa de PAT ou segredo adicional.
 

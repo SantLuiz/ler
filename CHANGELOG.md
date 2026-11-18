@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.5 — 2026-11-18
+
+- Publish an offline Windows x64 portable ZIP alongside the installer, with optional user PATH and shortcut setup.
+- Add a portable download to both site languages.
+- Include upstream Bun and WebKit license notices in both Windows packages.
+
 ## 1.1.4 — 2026-11-15
 
 - Preserve the home logo size and logo/background animations while searching the library.

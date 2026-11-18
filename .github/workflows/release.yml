@@ -56,9 +56,13 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Could not build technical manual.' }
           python scripts/manual/qa.py
           if ($LASTEXITCODE -ne 0) { throw 'Technical manual failed layout or link validation.' }
-      - name: Build installer
+      - name: Build installer and portable ZIP
         shell: powershell
         run: .\scripts\build-release.ps1 -DownloadCompiler
+      - name: Validate extracted portable ZIP
+        timeout-minutes: 3
+        shell: powershell
+        run: .\scripts\test-portable.ps1 -TestUserPath
       - name: Build validation installer with separate AppId
         timeout-minutes: 5
         shell: powershell
@@ -96,8 +100,8 @@ jobs:
           $draft = gh release view $env:RELEASE_TAG --json isDraft | ConvertFrom-Json
           if (-not $draft.isDraft) { throw 'Release is already public; published assets will not be overwritten.' }
           $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
-          $assets = Get-Item "dist/LER-$version-Setup-x64.exe", "dist/LER-$version-Setup-x64.exe.sha256", "output/pdf/LER_por_dentro_Manual_completo_$version.pdf"
-          if ($assets.Count -ne 3) { throw 'Expected installer, checksum and versioned PDF manual.' }
+          $assets = Get-Item "dist/LER-$version-Setup-x64.exe", "dist/LER-$version-Setup-x64.exe.sha256", "dist/LER-$version-Portable-x64.zip", "dist/LER-$version-Portable-x64.zip.sha256", "output/pdf/LER_por_dentro_Manual_completo_$version.pdf"
+          if ($assets.Count -ne 5) { throw 'Expected installer, portable ZIP, both checksums and versioned PDF manual.' }
           gh release upload $env:RELEASE_TAG @($assets.FullName) --clobber
           if ($LASTEXITCODE -ne 0) { throw 'Could not upload release assets.' }
           gh release edit $env:RELEASE_TAG --draft=false --latest

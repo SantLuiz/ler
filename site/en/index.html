@@ -26,10 +26,10 @@
       <p class="subtitle">An extremely minimal reader</p>
       <h1>Less interface.<br>One more page.</h1>
       <p class="intro">Your books, your keyboard and a quiet place to read.<br class="desktop"> A local library that remembers where you left off.</p>
-      <div class="actions"><a class="button primary" data-download href="https://github.com/SantLuiz/ler/releases/latest">↓ Download for Windows</a><a class="button" href="#codigo">&lt;/&gt; Clone repository</a></div>
-      <p class="fine" id="release-info" aria-live="polite">v1.1.4 · Windows x64 · Graphical installer · MIT license</p>
+      <div class="actions"><a class="button primary" data-download href="https://github.com/SantLuiz/ler/releases/latest">↓ Download for Windows</a><a class="button" href="#codigo">&lt;/&gt; Clone repository</a><a class="button" data-portable href="https://github.com/SantLuiz/ler/releases/latest">↓ Download portable ZIP · Windows x64</a></div>
+      <p class="fine" id="release-info" aria-live="polite">v1.1.4 · Windows x64 · Graphical installer · MIT license (LER code)</p>
       <a class="quiet-link" href="https://github.com/SantLuiz/ler/releases">All releases and checksums ↗</a>
-      <a class="quiet-link" data-manual href="https://github.com/SantLuiz/ler/releases/download/v1.1.4/LER_por_dentro_Manual_completo_1.1.4.pdf">Technical manual 1.1.4 (PDF, Portuguese) ↗</a>
+      <a class="quiet-link" data-manual href="https://github.com/SantLuiz/ler/releases/download/v1.1.4/LER_por_dentro_Manual_completo_1.1.4.pdf">Technical manual (PDF, Portuguese) ↗</a>
       <div class="terminal" aria-label="Illustrative demonstration of the LER interface">
         <div class="terminal-bar"><span>LER / library</span><span>EPUB · TXT · PDF</span></div>
         <div class="terminal-body"><div class="terminal-path">~/Documents/Library <span>Ctrl+L</span></div><div class="search">&gt; <span>Search for a book, title or author</span><span class="cursor">▌</span></div><div class="book selected"><span>› Dom Casmurro</span><span>Machado de Assis · EPUB</span></div><div class="book"><span>  Selected poems</span><span>TXT</span></div><div class="book"><span>  Study notebook</span><span>PDF</span></div><div class="terminal-help">Enter open <span>Tab options</span><span>Ctrl+L library</span></div></div>
@@ -42,6 +42,7 @@
     </section>
     <section id="instalar" class="shell section install">
       <div class="section-title"><span class="index">02 / INSTALL</span><h2>From download to your first read.</h2><p>Faster startup and a smaller installation. The installer includes everything LER needs; you do not need to install Git, Node.js or Bun.</p><a class="button primary" data-download href="https://github.com/SantLuiz/ler/releases/latest">↓ Download installer · Windows x64</a></div>
+      <p>Extract the ZIP and open <code>LER.cmd</code>. The bundle includes its dependencies and works offline. To enable the terminal command, use <code>Configurar-LER.ps1 -AdicionarAoPath</code>.</p>
       <ol class="steps"><li><h3>Download and open the installer.</h3><p>Choose <code>LER-…-Setup-x64.exe</code> on GitHub Releases and follow the wizard. Installation works offline and requires no administrator access.</p></li><li><h3>Choose where to install.</h3><p>Select a folder and integrations: shortcuts, the <code>LER</code> terminal command and “Open with LER” in File Explorer. Keep your books outside the application folder.</p></li><li><h3>Open LER and choose your books.</h3><p>Use the Start menu or a shortcut. On the home screen, press <kbd>Ctrl</kbd> + <kbd>L</kbd> to select your library, then confirm with “Use this folder”.</p></li></ol>
     </section>
     <section id="usar" class="shell section">
